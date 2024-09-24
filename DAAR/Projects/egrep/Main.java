@@ -15,7 +15,6 @@ public class Main {
         return content.toString();
     }
     public static void main(String[] args) {
-        // Lecture de la regex
         String regEx="a|bc*";
         // if (args.length > 0) {
         //     // Lecture à partir d'un fichier
@@ -32,42 +31,7 @@ public class Main {
         //     regEx = scanner.next();
         //     scanner.close();
         // }
-
-        // Affichage de la regex
-        System.out.println("Expression régulière : " + regEx);
-
-        // Construction de l'arbre syntaxique
-        RegExTree syntaxTree;
-        try {
-            syntaxTree = RegEx.parse(regEx); // Parsing de l'arbre syntaxique
-            System.out.println("Arbre syntaxique : " + syntaxTree);
-        } catch (Exception e) {
-            System.err.println("Erreur lors du parsing de l'expression régulière.");
-            e.printStackTrace();
-            return;
-        }
-
-        // Conversion en NDFA
-        NDFA ndfa = new NDFA();
-        ndfa.fromRegexTree(syntaxTree);
-        System.out.println("NDFA généré :");
-        ndfa.print();
-
-        // Générer le fichier .dot pour le NDFA
-        String ndfaDotFile = "ndfa.dot";
-        ndfa.toDotFile(ndfaDotFile);
-        System.out.println("Fichier .dot pour le NDFA créé : " + ndfaDotFile);
-
-        // Conversion du NDFA en DFA
-        DFA dfa = new DFA(ndfa);
-        System.out.println("DFA généré :");
-        dfa.print();
-
-        // Générer le fichier .dot pour le DFA
-        String dfaDotFile = "dfa.dot";
-        dfa.toDotFile(dfaDotFile);
-        System.out.println("Fichier .dot pour le DFA créé : " + dfaDotFile);
-
+        constructExampleDFA(regEx);
         // Exemple de lecture d'un fichier pour le parsing d'une chaîne (à adapter)
         // Ici on peut imaginer lire un fichier avec une chaîne à analyser par l'automate
         if (args.length > 1) {
@@ -81,4 +45,23 @@ public class Main {
             }
         }
     }
+    public static void constructExampleDFA(String regEx){
+        // Affichage de la regex
+        System.out.println("Expression régulière : " + regEx);
+        // Conversion en NDFA
+        Automate automate = new Automate(regEx);
+        NDFA ndfa = automate.getNDfa();
+        ndfa.print();
+        // Générer le fichier .dot pour le NDFA
+        String ndfaDotFile = "ndfa.dot";
+        ndfa.toDotFile(ndfaDotFile);
+        System.out.println("Fichier .dot pour le NDFA créé : " + ndfaDotFile);
+        DFA dfa = automate.getDfa();
+        System.out.println("DFA généré :");
+        dfa.print();
+        String dfaDotFile = "dfa.dot";
+        dfa.toDotFile(dfaDotFile);
+        System.out.println("Fichier .dot pour le DFA créé : " + dfaDotFile);
+
+    } 
 }

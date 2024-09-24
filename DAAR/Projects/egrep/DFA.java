@@ -75,7 +75,8 @@ class DFA {
                 currentDFAState.addTransition(entry.getKey(), dfaStateMapping.get(entry.getValue()));
             }
         }
-        
+        // Appliquer la minimisation du DFA
+        this.minimize();
     }
 
     // Fonction pour calculer la fermeture epsilon d'un ensemble d'états
@@ -108,7 +109,76 @@ class DFA {
         }
         return currentState.isFinal();
     }
+//! #######################################"##############"
+    // Minimisation du DFA : algorithme de minimisation des états
+    private void minimize() {
+        Set<State> nonFinalStates = new HashSet<>(states);
+        nonFinalStates.removeAll(finalStates);
 
+        // Partitionner les états en deux groupes : finaux et non finaux
+        Set<Set<State>> partitions = new HashSet<>();
+        partitions.add(nonFinalStates);
+        partitions.add(finalStates);
+
+        boolean changed = true;
+        while (changed) {
+            changed = false;
+            Set<Set<State>> newPartitions = new HashSet<>();
+
+            for (Set<State> group : partitions) {
+                Map<Map<Character, State>, Set<State>> transitionGroups = new HashMap<>();
+
+                for (State state : group) {
+                    Map<Character, State> transitions = new HashMap<>();
+                    for (Map.Entry<Character, Set<State>> entry : state.getAllTransitions().entrySet()) {
+                        transitions.put(entry.getKey(), findPartition(entry.getValue().iterator().next(), partitions));
+                    }
+                    transitionGroups.putIfAbsent(transitions, new HashSet<>());
+                    transitionGroups.get(transitions).add(state);
+                }
+
+                newPartitions.addAll(transitionGroups.values());
+                if (transitionGroups.size() > 1) {
+                    changed = true;
+                }
+            }
+
+            partitions = newPartitions;
+        }
+
+        // Fusionner les états équivalents
+        mergeEquivalentStates(partitions);
+    }
+    // Trouver à quel groupe (partition) appartient un état donné
+    private State findPartition(State state, Set<Set<State>> partitions) {
+        for (Set<State> partition : partitions) {
+            if (partition.contains(state)) {
+                return partition.iterator().next();
+            }
+        }
+        return null;
+    }
+
+    // Fusionner les états équivalents après la minimisation
+    private void mergeEquivalentStates(Set<Set<State>> partitions) {
+        Map<State, State> representative = new HashMap<>();
+
+        for (Set<State> partition : partitions) {
+            State rep = partition.iterator().next();
+            for (State state : partition) {
+                representative.put(state, rep);
+            }
+        }
+
+        // Réassigner les transitions vers les représentants
+        for (State state : states) {
+            state.replaceTransitions(representative);
+        }
+
+        // Supprimer les états non représentatifs
+        states.removeIf(state -> !representative.containsKey(state) || representative.get(state) != state);
+    }
+//! #######################################"##############"
 
     // Affichage simple des états et transitions de la DFA
     public void print() {
