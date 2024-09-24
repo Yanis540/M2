@@ -59,7 +59,7 @@ public class Main {
         System.out.println("Fichier .dot pour le NDFA créé : " + ndfaDotFile);
 
         // Conversion du NDFA en DFA
-        DFA dfa = DFA.fromNDFA(ndfa);
+        DFA dfa = new DFA(ndfa);
         System.out.println("DFA généré :");
         dfa.print();
 

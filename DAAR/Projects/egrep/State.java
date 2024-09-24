@@ -49,7 +49,34 @@ class State {
     public Map<Character, Set<State>> getAllTransitions() {
         return transitions;
     }
-
+    public void replaceTransitions(Map<State, State> representative) {
+        // Remplacer les transitions par leurs représentants
+        Map<Character, Set<State>> newTransitions = new HashMap<>();
+    
+        for (Map.Entry<Character, Set<State>> entry : transitions.entrySet()) {
+            Character symbol = entry.getKey();
+            Set<State> targetStates = entry.getValue();
+            Set<State> newTargetStates = new HashSet<>();
+    
+            // Remplacer chaque état cible par son représentant
+            for (State targetState : targetStates) {
+                newTargetStates.add(representative.get(targetState));
+            }
+    
+            newTransitions.put(symbol, newTargetStates);
+        }
+    
+        // Mettre à jour les transitions avec les nouveaux états cibles
+        this.transitions = newTransitions;
+    
+        // Traiter les transitions epsilon
+        Set<State> newEpsilonTransitions = new HashSet<>();
+        for (State epsilonState : epsilonTransitions) {
+            newEpsilonTransitions.add(representative.get(epsilonState));
+        }
+    
+        this.epsilonTransitions = newEpsilonTransitions;
+    }
     // Surcharger toString pour un affichage simple
     public String toString() {
         return "State " + id + (isFinal ? " [final]" : "");

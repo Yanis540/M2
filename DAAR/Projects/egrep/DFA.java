@@ -3,155 +3,148 @@ import java.io.IOException;
 import java.util.*;
 
 class DFA {
-    private State startState;
     private Set<State> states;
-    
-    // Constructeur
-    public DFA(State startState, Set<State> states) {
-        this.startState = startState;
-        this.states = states;
+    private State startState;
+    private Set<State> finalStates;
+    private Map<Set<State>, State> dfaStateMapping;
+
+    // Constructeur DFA vide
+    public DFA() {
+        this.states = new HashSet<>();
+        this.finalStates = new HashSet<>();
+        this.dfaStateMapping = new HashMap<>();
+    }
+    public DFA(NDFA ndfa) {
+        this.states = new HashSet<>();
+        this.finalStates = new HashSet<>();
+        this.dfaStateMapping = new HashMap<>();
+        fromNDFA(ndfa);
     }
 
-    // Méthode pour convertir un NDFA en DFA
-    public static DFA fromNDFA(NDFA ndfa) {
-        Map<Set<State>, State> dfaStateMapping = new HashMap<>();
-        Queue<Set<State>> queue = new LinkedList<>();
-        Set<State> dfaStates = new HashSet<>();
+    // Méthode pour construire une DFA à partir d'un NDFA
+    public void fromNDFA(NDFA ndfa) {
+        Queue<Set<State>> worklist = new LinkedList<>();
+        Map<Set<State>, Map<Character, Set<State>>> transitions = new HashMap<>();
+        Map<Set<State>, Boolean> marked = new HashMap<>();
+        
+        // Déterminiser le NDFA en DFA
+        Set<State> startSet = epsilonClosure(Collections.singleton(ndfa.getStartState()));
+        worklist.add(startSet);
+        marked.put(startSet, false);
+        
+        State startDFAState = new State(0);
+        states.add(startDFAState);
+        dfaStateMapping.put(startSet, startDFAState);
+        this.startState = startDFAState;
 
-        // Fermeture epsilon de l'état initial du NDFA
-        Set<State> startNDFASet = epsilonClosure(ndfa.getStartState());
-        State dfaStartState = new State(generateStateId());
-        dfaStateMapping.put(startNDFASet, dfaStartState);
-        queue.add(startNDFASet);
-        dfaStates.add(dfaStartState);
+        while (!worklist.isEmpty()) {
+            Set<State> currentSet = worklist.poll();
+            State currentDFAState = dfaStateMapping.get(currentSet);
+            marked.put(currentSet, true);
 
-        while (!queue.isEmpty()) {
-            Set<State> currentNDFAStates = queue.poll();
-            State currentDFAState = dfaStateMapping.get(currentNDFAStates);
-
-            // Vérifier si cet ensemble contient un état final
-            for (State ndfaState : currentNDFAStates) {
-                if (ndfaState.isFinal()) {
-                    currentDFAState.setFinal(true);
-                    break;
-                }
+            // Si l'un des états de l'ensemble est un état final du NDFA, marquer l'état DFA comme final
+            if (currentSet.stream().anyMatch(State::isFinal)) {
+                currentDFAState.setFinal(true);
+                finalStates.add(currentDFAState);
             }
 
-            // Transition pour chaque symbole
-            Map<Character, Set<State>> transitions = new HashMap<>();
+            // Gérer les transitions pour chaque symbole
+            Map<Character, Set<State>> newTransitions = new HashMap<>();
+            for (State ndfaState : currentSet) {
+                for (Map.Entry<Character, Set<State>> entry : ndfaState.getAllTransitions().entrySet()) {
+                    Character symbol = entry.getKey();
+                    Set<State> targetStates = entry.getValue();
+                    Set<State> targetClosure = epsilonClosure(targetStates);
 
-            for (State ndfaState : currentNDFAStates) {
-                for (Map.Entry<Character, Set<State>> transition : ndfaState.getAllTransitions().entrySet()) {
-                    char symbol = transition.getKey();
-                    Set<State> targetStates = transition.getValue();
+                    newTransitions.putIfAbsent(symbol, new HashSet<>());
+                    newTransitions.get(symbol).addAll(targetClosure);
 
-                    Set<State> epsilonClosure = epsilonClosure(targetStates);
-                    transitions.putIfAbsent(symbol, new HashSet<>());
-                    transitions.get(symbol).addAll(epsilonClosure);
-                }
-            }
-
-            // Ajouter les transitions au DFA
-            for (Map.Entry<Character, Set<State>> transition : transitions.entrySet()) {
-                char symbol = transition.getKey();
-                Set<State> targetNDFAStates = transition.getValue();
-
-                if (!dfaStateMapping.containsKey(targetNDFAStates)) {
-                    State newDFAState = new State(generateStateId());
-                    dfaStateMapping.put(targetNDFAStates, newDFAState);
-                    queue.add(targetNDFAStates);
-                    dfaStates.add(newDFAState);
-                }
-
-                currentDFAState.addTransition(symbol, dfaStateMapping.get(targetNDFAStates));
-            }
-        }
-
-        return new DFA(dfaStartState, dfaStates);
-    }
-
-    // Fermeture epsilon pour un état
-    private static Set<State> epsilonClosure(State state) {
-        Set<State> closure = new HashSet<>();
-        Stack<State> stack = new Stack<>();
-        stack.push(state);
-        closure.add(state);
-
-        while (!stack.isEmpty()) {
-            State current = stack.pop();
-            Set<State> epsilonTransitions = current.getTransitions(NDFA.EPSILON); // Transition epsilon
-            if (epsilonTransitions != null) {
-                for (State epsilonState : epsilonTransitions) {
-                    if (!closure.contains(epsilonState)) {
-                        closure.add(epsilonState);
-                        stack.push(epsilonState);
+                    // Si le nouvel ensemble d'états n'est pas marqué, on l'ajoute à la worklist
+                    if (!dfaStateMapping.containsKey(targetClosure)) {
+                        State newDFAState = new State(states.size());
+                        dfaStateMapping.put(targetClosure, newDFAState);
+                        states.add(newDFAState);
+                        marked.put(targetClosure, false);
+                        worklist.add(targetClosure);
                     }
                 }
             }
-        }
 
+            // Appliquer les transitions DFA
+            for (Map.Entry<Character, Set<State>> entry : newTransitions.entrySet()) {
+                currentDFAState.addTransition(entry.getKey(), dfaStateMapping.get(entry.getValue()));
+            }
+        }
+        
+    }
+
+    // Fonction pour calculer la fermeture epsilon d'un ensemble d'états
+    private Set<State> epsilonClosure(Set<State> states) {
+        Set<State> closure = new HashSet<>(states);
+        Queue<State> worklist = new LinkedList<>(states);
+
+        while (!worklist.isEmpty()) {
+            State current = worklist.poll();
+            for (State epsilonState : current.getEpsilonTransitions()) {
+                if (!closure.contains(epsilonState)) {
+                    closure.add(epsilonState);
+                    worklist.add(epsilonState);
+                }
+            }
+        }
         return closure;
     }
 
-    // Fermeture epsilon pour un ensemble d'états
-    private static Set<State> epsilonClosure(Set<State> states) {
-        Set<State> closure = new HashSet<>();
-        for (State state : states) {
-            closure.addAll(epsilonClosure(state));
+    // Méthode pour vérifier si un string est accepté par la DFA (correspond à un état final)
+    public boolean find(String input) {
+        State currentState = startState;
+
+        for (char c : input.toCharArray()) {
+            Set<State> nextStates = currentState.getTransitions(c);
+            if (nextStates.isEmpty()) {
+                return false; // Aucune transition possible pour ce symbole
+            }
+            currentState = nextStates.iterator().next(); // Se déplacer vers le nouvel état
         }
-        return closure;
+        return currentState.isFinal();
     }
 
-    // Générer un nouvel ID pour les états du DFA
-    private static int stateCounter = 0;
-    private static int generateStateId() {
-        return stateCounter++;
-    }
 
-    // Méthode print pour afficher les états et transitions du DFA
+    // Affichage simple des états et transitions de la DFA
     public void print() {
         System.out.println("DFA:");
         for (State state : states) {
             System.out.println(state);
             for (Map.Entry<Character, Set<State>> entry : state.getAllTransitions().entrySet()) {
-                for (State target : entry.getValue()) {
-                    System.out.println("  Transition: " + state.getId() + " -- " + entry.getKey() + " --> " + target.getId());
+                for (State toState : entry.getValue()) {
+                    System.out.println("  " + state.getId() + " -- " + entry.getKey() + " --> " + toState.getId());
                 }
             }
         }
     }
 
-    // Méthode pour générer un fichier .dot pour le DFA
+    // Méthode pour générer un fichier Dot pour visualiser la DFA avec Graphviz
     public void toDotFile(String filename) {
         try (FileWriter writer = new FileWriter(filename)) {
             writer.write("digraph DFA {\n");
             writer.write("  rankdir=LR;\n");
-            writer.write("  node [shape=circle];\n");
+            writer.write("  node [shape = circle];\n");
 
-            // États initiaux
-            writer.write("  start [shape=none, label=\"\"];\n");
-            writer.write("  start -> " + startState.getId() + ";\n");
-
-            // États finaux
             for (State state : states) {
                 if (state.isFinal()) {
-                    writer.write("  " + state.getId() + " [shape=doublecircle];\n");
+                    writer.write("  " + state.getId() + " [shape = doublecircle];\n");
                 }
-            }
 
-            // Transitions
-            for (State state : states) {
                 for (Map.Entry<Character, Set<State>> entry : state.getAllTransitions().entrySet()) {
-                    for (State dest : entry.getValue()) {
-                        writer.write("  " + state.getId() + " -> " + dest.getId() + " [label=\"" + entry.getKey() + "\"];\n");
+                    for (State toState : entry.getValue()) {
+                        writer.write("  " + state.getId() + " -> " + toState.getId() + " [label=\"" + entry.getKey() + "\"];\n");
                     }
                 }
             }
 
             writer.write("}\n");
-            System.out.println("Dot file '" + filename + "' created successfully.");
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Erreur lors de l'écriture du fichier Dot: " + e.getMessage());
         }
     }
 }
