@@ -40,7 +40,7 @@ class State {
         epsilonTransitions.add(state);
     }
     // Récupérer les transitions pour un symbole donné
-    public Set<State> getTransitions(int symbol) {
+    public Set<State> getTransitions(char symbol) {
         return transitions.getOrDefault(symbol, new HashSet<>());
     }
    

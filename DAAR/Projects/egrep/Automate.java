@@ -27,6 +27,11 @@ public class Automate {
         this.dfa =  new DFA(ndfa); 
     }
     public boolean find(String line){
-        return dfa.find(line);
+        boolean res = dfa.find(line);
+        if(res)
+            return res; 
+        if(line.length() == 0)
+            return false; 
+        return find(line.substring(1));
     }
 }

@@ -62,6 +62,8 @@ public class Main {
         String dfaDotFile = "dfa.dot";
         dfa.toDotFile(dfaDotFile);
         System.out.println("Fichier .dot pour le DFA créé : " + dfaDotFile);
-
+        
+        String lookupString = "darbb";
+        System.out.println("String is found  :  "+automate.find(lookupString));
     } 
 }
