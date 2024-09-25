@@ -7,76 +7,117 @@ class DFA {
     private State startState;
     private Set<State> finalStates;
     private Map<Set<State>, State> dfaStateMapping;
-
+    private int stateIdCounter; // Compteur pour générer des IDs d'état uniques
+    // Méthode pour générer un ID d'état unique
+    private int generateStateId() {
+        return stateIdCounter++; // Retourner l'ID actuel et l'incrémenter
+    }
     // Constructeur DFA vide
     public DFA() {
         this.states = new HashSet<>();
         this.finalStates = new HashSet<>();
         this.dfaStateMapping = new HashMap<>();
+        this.stateIdCounter = 0; // Initialiser le compteur
     }
     public DFA(NDFA ndfa) {
         this.states = new HashSet<>();
         this.finalStates = new HashSet<>();
         this.dfaStateMapping = new HashMap<>();
+        this.stateIdCounter = 0; // Initialiser le compteur
         fromNDFA(ndfa);
     }
 
     // Méthode pour construire une DFA à partir d'un NDFA
     public void fromNDFA(NDFA ndfa) {
+        
         Queue<Set<State>> worklist = new LinkedList<>();
-        Map<Set<State>, Map<Character, Set<State>>> transitions = new HashMap<>();
-        Map<Set<State>, Boolean> marked = new HashMap<>();
+        this.dfaStateMapping = new HashMap<>();
         
         // Déterminiser le NDFA en DFA
         Set<State> startSet = epsilonClosure(Collections.singleton(ndfa.getStartState()));
         worklist.add(startSet);
-        marked.put(startSet, false);
         
-        State startDFAState = new State(0);
+        // Créer l'état DFA initial
+        State startDFAState = new State(this.generateStateId());
         states.add(startDFAState);
-        dfaStateMapping.put(startSet, startDFAState);
+        this.dfaStateMapping.put(startSet, startDFAState);
         this.startState = startDFAState;
 
-        while (!worklist.isEmpty()) {
-            Set<State> currentSet = worklist.poll();
-            State currentDFAState = dfaStateMapping.get(currentSet);
-            marked.put(currentSet, true);
+        // Marquer l'état final du DFA si nécessaire
+        if (startSet.stream().anyMatch(State::isFinal)) {
+            startDFAState.setFinal(true);
+        }
 
-            // Si l'un des états de l'ensemble est un état final du NDFA, marquer l'état DFA comme final
-            if (currentSet.stream().anyMatch(State::isFinal)) {
-                currentDFAState.setFinal(true);
-                finalStates.add(currentDFAState);
-            }
+        while (!worklist.isEmpty()) {
+            
+            Set<State> currentSet = worklist.poll();
+            State currentDFAState = this.dfaStateMapping.get(currentSet);
 
             // Gérer les transitions pour chaque symbole
             Map<Character, Set<State>> newTransitions = new HashMap<>();
+            System.out.println("Current DFA State: " + currentDFAState.getId());
             for (State ndfaState : currentSet) {
+                System.out.println("\tProcessing NDFA State : " + ndfaState.getId());
                 for (Map.Entry<Character, Set<State>> entry : ndfaState.getAllTransitions().entrySet()) {
+                    System.out.println("\t\tProcessing input: " + entry.getKey());
+                    System.out.println("\t\tTarget state set: " + entry.getValue());
                     Character symbol = entry.getKey();
                     Set<State> targetStates = entry.getValue();
                     Set<State> targetClosure = epsilonClosure(targetStates);
-
+                    // Créer la transition dans le DFA
+                   
                     newTransitions.putIfAbsent(symbol, new HashSet<>());
                     newTransitions.get(symbol).addAll(targetClosure);
-
-                    // Si le nouvel ensemble d'états n'est pas marqué, on l'ajoute à la worklist
-                    if (!dfaStateMapping.containsKey(targetClosure)) {
-                        State newDFAState = new State(states.size());
-                        dfaStateMapping.put(targetClosure, newDFAState);
+                    System.out.println("\t\tNew DFA Transitions: " + newTransitions);
+                    System.out.println("\t\tTarget Closure: " + targetClosure);
+                    // Si l'ensemble cible n'existe pas encore, le créer et l'ajouter à la worklist
+                    if (!this.dfaStateMapping.containsKey(targetClosure)) {
+                        State newDFAState = new State(this.generateStateId());
+                        this.dfaStateMapping.put(targetClosure, newDFAState);
                         states.add(newDFAState);
-                        marked.put(targetClosure, false);
                         worklist.add(targetClosure);
+
+                        // Vérifier si cet état doit être marqué comme final
+                        if (targetClosure.stream().anyMatch(State::isFinal)) {
+                            newDFAState.setFinal(true);
+                        }
+                        System.out.println("\t\tCreated new DFA state: " + newDFAState.getId());
+                        System.out.println("\t\tUpdated Mapping:  " + this.dfaStateMapping);
+                    }else {
                     }
                 }
             }
-
+            
             // Appliquer les transitions DFA
             for (Map.Entry<Character, Set<State>> entry : newTransitions.entrySet()) {
-                currentDFAState.addTransition(entry.getKey(), dfaStateMapping.get(entry.getValue()));
+                Character inputSymbol = entry.getKey();
+                Set<State> targetSet = entry.getValue();
+                State targetDFAState;
+
+                // Vérifier si l'état cible a déjà été créé
+                if (!this.dfaStateMapping.containsKey(targetSet)) {
+                    targetDFAState = new State(this.generateStateId());
+                    this.dfaStateMapping.put(targetSet, targetDFAState);
+                    states.add(targetDFAState);
+                    worklist.add(targetSet);
+
+                    // Vérifier si cet état doit être marqué comme final
+                    if (targetSet.stream().anyMatch(State::isFinal)) {
+                        targetDFAState.setFinal(true);
+                    }
+                    System.out.println("\t\tCreated new DFA state: " + targetDFAState.getId());
+                } else {
+                    targetDFAState = this.dfaStateMapping.get(targetSet);
+                }
+
+                // Ajouter la transition
+                currentDFAState.addTransition(inputSymbol, targetDFAState);
+                System.out.println("\t\tTransition added from " + currentDFAState.getId() + " to " + targetDFAState.getId());
             }
         }
         // Appliquer la minimisation du DFA
         this.minimize();
+        this.renameStates();
     }
 
     // Fonction pour calculer la fermeture epsilon d'un ensemble d'états
@@ -95,16 +136,35 @@ class DFA {
         }
         return closure;
     }
-
+    public void renameStates() {
+        int counter = 0;
+    
+        
+        // Parcourir tous les états du DFA et les renommer
+        for (State state : states) {
+            state.setId(counter++); // Remettre l'identifiant à zéro et l'incrémenter
+        }
+        // Si vous avez un état de départ spécifique, vous pouvez le gérer ici
+        if (this.startState != null) {
+            this.startState.setId(0); // Assurer que l'état de départ a l'identifiant 0
+        }
+    
+    
+        System.out.println("States have been renamed from 0 to " + (counter - 1));
+    }
+    
     // Méthode pour vérifier si un string est accepté par la DFA (correspond à un état final)
     public boolean find(String input) {
-        State currentState = startState;
-
+        State currentState = this.startState;
         for (char c : input.toCharArray()) {
             Set<State> nextStates = currentState.getTransitions(c);
+            System.out.println(currentState+"->Next state"+nextStates);
+            if(currentState.isFinal())
+                return true; 
             if (nextStates.isEmpty()) {
                 return false; // Aucune transition possible pour ce symbole
             }
+            
             currentState = nextStates.iterator().next(); // Se déplacer vers le nouvel état
         }
         return currentState.isFinal();

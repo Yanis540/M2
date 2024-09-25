@@ -15,7 +15,7 @@ public class Main {
         return content.toString();
     }
     public static void main(String[] args) {
-        String regEx="a|bc*";
+        String regEx="a|ab";
         // if (args.length > 0) {
         //     // Lecture à partir d'un fichier
         //     try {
@@ -51,14 +51,14 @@ public class Main {
         // Conversion en NDFA
         Automate automate = new Automate(regEx);
         NDFA ndfa = automate.getNDfa();
-        ndfa.print();
+        // ndfa.print();
         // Générer le fichier .dot pour le NDFA
         String ndfaDotFile = "ndfa.dot";
         ndfa.toDotFile(ndfaDotFile);
         System.out.println("Fichier .dot pour le NDFA créé : " + ndfaDotFile);
         DFA dfa = automate.getDfa();
         System.out.println("DFA généré :");
-        dfa.print();
+        // dfa.print();
         String dfaDotFile = "dfa.dot";
         dfa.toDotFile(dfaDotFile);
         System.out.println("Fichier .dot pour le DFA créé : " + dfaDotFile);

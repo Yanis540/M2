@@ -19,6 +19,11 @@ class State {
         return id;
     }
     // Accesseurs et mutateurs
+    public void setId(int id) {
+        this.id = id; 
+    }
+
+    // Accesseurs et mutateurs
     public Set<State> getEpsilonTransitions() {
         return this.epsilonTransitions;
     }
@@ -36,52 +41,66 @@ class State {
         transitions.putIfAbsent(symbol, new HashSet<>());
         transitions.get(symbol).add(toState);
     }
+
     public void addEpsilontransition(State state) {
         epsilonTransitions.add(state);
     }
+
     // Récupérer les transitions pour un symbole donné
     public Set<State> getTransitions(char symbol) {
         return transitions.getOrDefault(symbol, new HashSet<>());
     }
-   
 
     // Obtenir toutes les transitions (pour obtenir l'ensemble des symboles, etc.)
     public Map<Character, Set<State>> getAllTransitions() {
         return transitions;
     }
+
     public void replaceTransitions(Map<State, State> representative) {
         // Remplacer les transitions par leurs représentants
         Map<Character, Set<State>> newTransitions = new HashMap<>();
-    
+
         for (Map.Entry<Character, Set<State>> entry : transitions.entrySet()) {
             Character symbol = entry.getKey();
             Set<State> targetStates = entry.getValue();
             Set<State> newTargetStates = new HashSet<>();
-    
+
             // Remplacer chaque état cible par son représentant
             for (State targetState : targetStates) {
-                newTargetStates.add(representative.get(targetState));
+                State representativeState = representative.get(targetState);
+                if (representativeState != null) { // Vérifier que le représentant n'est pas null
+                    newTargetStates.add(representativeState);
+                } else {
+                    System.err.println("Aucun représentant trouvé pour l'état " + targetState);
+                }
             }
-    
+
             newTransitions.put(symbol, newTargetStates);
         }
-    
+
         // Mettre à jour les transitions avec les nouveaux états cibles
         this.transitions = newTransitions;
-    
+
         // Traiter les transitions epsilon
         Set<State> newEpsilonTransitions = new HashSet<>();
         for (State epsilonState : epsilonTransitions) {
-            newEpsilonTransitions.add(representative.get(epsilonState));
+            State representativeEpsilonState = representative.get(epsilonState);
+            if (representativeEpsilonState != null) {
+                newEpsilonTransitions.add(representativeEpsilonState);
+            } else {
+                System.err.println("Aucun représentant trouvé pour l'état epsilon " + epsilonState);
+            }
         }
-    
+
         this.epsilonTransitions = newEpsilonTransitions;
     }
+
     // Surcharger toString pour un affichage simple
     public String toString() {
         return "State " + id + (isFinal ? " [final]" : "");
     }
 }
+
 // Classe auxiliaire pour représenter une paire d'états (début, fin)
 class StatePair {
     public State start;
