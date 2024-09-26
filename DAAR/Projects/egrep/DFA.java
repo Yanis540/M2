@@ -124,7 +124,6 @@ class DFA {
     private Set<State> epsilonClosure(Set<State> states) {
         Set<State> closure = new HashSet<>(states);
         Queue<State> worklist = new LinkedList<>(states);
-
         while (!worklist.isEmpty()) {
             State current = worklist.poll();
             for (State epsilonState : current.getEpsilonTransitions()) {
@@ -207,8 +206,10 @@ class DFA {
         }
 
         // Fusionner les états équivalents
-        mergeEquivalentStates(partitions);
+        this.mergeEquivalentStates(partitions);
+        this.removeUnreachableStates();
     }
+
     // Trouver à quel groupe (partition) appartient un état donné
     private State findPartition(State state, Set<Set<State>> partitions) {
         for (Set<State> partition : partitions) {
@@ -218,6 +219,39 @@ class DFA {
         }
         return null;
     }
+    // Méthode pour supprimer les états non atteignables depuis l'état initial
+    public void removeUnreachableStates() {
+        // Créer un ensemble pour stocker les états atteignables
+        Set<State> reachableStates = new HashSet<>();
+        
+        // Utiliser une file pour parcourir les états depuis l'état initial
+        Queue<State> queue = new LinkedList<>();
+        queue.add(startState);
+        reachableStates.add(startState);
+        
+        // Parcours en largeur (BFS) pour marquer les états atteignables
+        while (!queue.isEmpty()) {
+            State currentState = queue.poll();
+            for (Map.Entry<Character, Set<State>> transition : currentState.getAllTransitions().entrySet()) {
+                for (State nextState : transition.getValue()) {
+                    if (!reachableStates.contains(nextState)) {
+                        reachableStates.add(nextState);
+                        queue.add(nextState);
+                    }
+                }
+            }
+        }
+        
+        // Filtrer les états non atteignables
+        states.removeIf(state -> !reachableStates.contains(state));
+        
+        // Réinitialiser les transitions des états restants pour ne garder que les transitions atteignables
+        for (State state : states) {
+            state.getAllTransitions().entrySet().removeIf(entry -> entry.getValue().stream().noneMatch(reachableStates::contains));
+        }
+        
+        System.out.println("Unreachable states removed.");
+    }
 
     // Fusionner les états équivalents après la minimisation
     private void mergeEquivalentStates(Set<Set<State>> partitions) {
@@ -225,6 +259,11 @@ class DFA {
 
         for (Set<State> partition : partitions) {
             State rep = partition.iterator().next();
+            boolean isFinal = partition.stream().anyMatch(State::isFinal); // Vérifier si un des états est final
+            // Si un des états de la partition est final, marquer le représentant comme final
+            if (isFinal) {
+                rep.setFinal(true);
+            }
             for (State state : partition) {
                 representative.put(state, rep);
             }

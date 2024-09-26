@@ -15,7 +15,7 @@ public class Main {
         return content.toString();
     }
     public static void main(String[] args) {
-        String regEx="a|ab";
+        String regEx="a|a((ed*(c|cd))|e)b";
         // if (args.length > 0) {
         //     // Lecture à partir d'un fichier
         //     try {
