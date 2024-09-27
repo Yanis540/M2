@@ -117,7 +117,6 @@ class DFA {
         }
         // Appliquer la minimisation du DFA
         this.minimize();
-        this.renameStates();
     }
 
     // Fonction pour calculer la fermeture epsilon d'un ensemble d'états
@@ -135,22 +134,7 @@ class DFA {
         }
         return closure;
     }
-    public void renameStates() {
-        int counter = 0;
-    
-        
-        // Parcourir tous les états du DFA et les renommer
-        for (State state : states) {
-            state.setId(counter++); // Remettre l'identifiant à zéro et l'incrémenter
-        }
-        // Si vous avez un état de départ spécifique, vous pouvez le gérer ici
-        if (this.startState != null) {
-            this.startState.setId(0); // Assurer que l'état de départ a l'identifiant 0
-        }
-    
-    
-        System.out.println("States have been renamed from 0 to " + (counter - 1));
-    }
+
     
     // Méthode pour vérifier si un string est accepté par la DFA (correspond à un état final)
     public boolean find(String input) {
