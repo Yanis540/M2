@@ -39,7 +39,7 @@ public class RegEx {
     return null;
   }
  
-  private static RegExTree parse(ArrayList<RegExTree> result) throws Exception {
+  public static RegExTree parse(ArrayList<RegExTree> result) throws Exception {
     while (containParenthese(result)) result=processParenthese(result);
     while (containEtoile(result)) result=processEtoile(result);
     while (containConcat(result)) result=processConcat(result);

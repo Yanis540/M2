@@ -141,7 +141,6 @@ class DFA {
         State currentState = this.startState;
         for (char c : input.toCharArray()) {
             Set<State> nextStates = currentState.getTransitions(c);
-            System.out.println(currentState+"->Next state"+nextStates);
             if(currentState.isFinal())
                 return true; 
             if (nextStates.isEmpty()) {
