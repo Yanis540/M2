@@ -1,0 +1,16 @@
+# Aliases for module
+/*.js
+
+# JS Stuff
+node_modules/
+
+# OS Stuff
+.DS_Store
+Thumbs.db
+
+# Yarn stuff
+yarn-error.log
+
+# Test stuff
+coverage/
+.nyc*
