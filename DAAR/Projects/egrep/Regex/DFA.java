@@ -1,8 +1,9 @@
+package Regex;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
-class DFA {
+public class DFA {
     private Set<State> states;
     private State startState;
     private Set<State> finalStates;

@@ -1,8 +1,9 @@
+package Regex;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
-class NDFA {
+public class NDFA {
     private Set<State> states;
     private int stateCounter;
     public static final char EPSILON = 'ε'; // Transition epsilon

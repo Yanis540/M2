@@ -1,3 +1,4 @@
+package Regex;
 public class Automate {
     private DFA dfa;
     private NDFA ndfa;
