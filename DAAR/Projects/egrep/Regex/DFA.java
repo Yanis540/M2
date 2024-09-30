@@ -56,12 +56,12 @@ public class DFA {
 
             // Gérer les transitions pour chaque symbole
             Map<Character, Set<State>> newTransitions = new HashMap<>();
-            System.out.println("Current DFA State: " + currentDFAState.getId());
+            //! System.out.println("Current DFA State: " + currentDFAState.getId());
             for (State ndfaState : currentSet) {
-                System.out.println("\tProcessing NDFA State : " + ndfaState.getId());
+                //! System.out.println("\tProcessing NDFA State : " + ndfaState.getId());
                 for (Map.Entry<Character, Set<State>> entry : ndfaState.getAllTransitions().entrySet()) {
-                    System.out.println("\t\tProcessing input: " + entry.getKey());
-                    System.out.println("\t\tTarget state set: " + entry.getValue());
+                    //! System.out.println("\t\tProcessing input: " + entry.getKey());
+                    //! System.out.println("\t\tTarget state set: " + entry.getValue());
                     Character symbol = entry.getKey();
                     Set<State> targetStates = entry.getValue();
                     Set<State> targetClosure = epsilonClosure(targetStates);
@@ -69,8 +69,8 @@ public class DFA {
                    
                     newTransitions.putIfAbsent(symbol, new HashSet<>());
                     newTransitions.get(symbol).addAll(targetClosure);
-                    System.out.println("\t\tNew DFA Transitions: " + newTransitions);
-                    System.out.println("\t\tTarget Closure: " + targetClosure);
+                    //! System.out.println("\t\tNew DFA Transitions: " + newTransitions);
+                    //! System.out.println("\t\tTarget Closure: " + targetClosure);
                     // Si l'ensemble cible n'existe pas encore, le créer et l'ajouter à la worklist
                     if (!this.dfaStateMapping.containsKey(targetClosure)) {
                         State newDFAState = new State(this.generateStateId());
@@ -82,8 +82,8 @@ public class DFA {
                         if (targetClosure.stream().anyMatch(State::isFinal)) {
                             newDFAState.setFinal(true);
                         }
-                        System.out.println("\t\tCreated new DFA state: " + newDFAState.getId());
-                        System.out.println("\t\tUpdated Mapping:  " + this.dfaStateMapping);
+                        //! System.out.println("\t\tCreated new DFA state: " + newDFAState.getId());
+                        //! System.out.println("\t\tUpdated Mapping:  " + this.dfaStateMapping);
                     }else {
                     }
                 }
@@ -106,14 +106,14 @@ public class DFA {
                     if (targetSet.stream().anyMatch(State::isFinal)) {
                         targetDFAState.setFinal(true);
                     }
-                    System.out.println("\t\tCreated new DFA state: " + targetDFAState.getId());
+                    //! System.out.println("\t\tCreated new DFA state: " + targetDFAState.getId());
                 } else {
                     targetDFAState = this.dfaStateMapping.get(targetSet);
                 }
 
                 // Ajouter la transition
                 currentDFAState.addTransition(inputSymbol, targetDFAState);
-                System.out.println("\t\tTransition added from " + currentDFAState.getId() + " to " + targetDFAState.getId());
+                //! System.out.println("\t\tTransition added from " + currentDFAState.getId() + " to " + targetDFAState.getId());
             }
         }
         // Appliquer la minimisation du DFA
@@ -234,7 +234,7 @@ public class DFA {
             state.getAllTransitions().entrySet().removeIf(entry -> entry.getValue().stream().noneMatch(reachableStates::contains));
         }
         
-        System.out.println("Unreachable states removed.");
+        //! System.out.println("Unreachable states removed.");
     }
 
     // Fusionner les états équivalents après la minimisation
@@ -267,7 +267,6 @@ public class DFA {
     public void print() {
         System.out.println("DFA:");
         for (State state : states) {
-            System.out.println(state);
             for (Map.Entry<Character, Set<State>> entry : state.getAllTransitions().entrySet()) {
                 for (State toState : entry.getValue()) {
                     System.out.println("  " + state.getId() + " -- " + entry.getKey() + " --> " + toState.getId());

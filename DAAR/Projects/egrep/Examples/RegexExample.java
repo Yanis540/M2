@@ -6,6 +6,7 @@ import Reader.Reader;
 import Regex.Automate;
 import Regex.DFA;
 import Regex.NDFA;
+import test.TestFile;
 
 public class RegexExample {
     public static void exampleDFA(String[]args){
@@ -62,13 +63,13 @@ public class RegexExample {
         NDFA ndfa = automate.getNDfa();
         // ndfa.print();
         // Générer le fichier .dot pour le NDFA
-        String ndfaDotFile = "ndfa.dot";
+        String ndfaDotFile = TestFile.BASE_FILE_PATH+"/ndfa.dot";
         ndfa.toDotFile(ndfaDotFile);
         System.out.println("Fichier .dot pour le NDFA créé : " + ndfaDotFile);
         DFA dfa = automate.getDfa();
         System.out.println("DFA généré :");
         // dfa.print();
-        String dfaDotFile = "dfa.dot";
+        String dfaDotFile = TestFile.BASE_FILE_PATH+"dfa.dot";
         dfa.toDotFile(dfaDotFile);
         System.out.println("Fichier .dot pour le DFA créé : " + dfaDotFile);
         
