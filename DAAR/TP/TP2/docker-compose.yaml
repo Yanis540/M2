@@ -1,0 +1,27 @@
+
+services:
+  api : 
+    image: daar_front
+    build : ./frontend 
+    depends_on:
+      db:
+        condition: service_healthy
+    environment: 
+      - PORT:3000
+      - COUCOU:AA
+      - PGHOST:localhost
+      - PGUSER:postgres
+      - PGPASSWORD:Yanis123
+      - PGDATABASE:books
+      - PGPORT:5432
+    ports : 
+      - "3000:3000"
+  db : 
+    image: daar_db
+    build : ./database
+    environment:
+      POSTGRES_PASSWORD: Yanis123
+
+    ports : 
+      - "5432:5432"
+    
