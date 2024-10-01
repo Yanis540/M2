@@ -29,7 +29,7 @@ public class TestFile {
         try {
             // Initialisation du fichier CSV
             FileWriter csvWriter = new FileWriter(BASE_FILE_PATH+"/results/speed.csv");
-            csvWriter.append("Method, AVG_KMP, AVG_DFA, MIN_KMP, MIN_DFA, MAX_KMP, MAX_DFA\n");
+            csvWriter.append("Method,AVG_KMP,AVG_DFA,MIN_KMP,MIN_DFA,MAX_KMP,MAX_DFA\n");
 
             // Mesure des performances pour KMP et DFA
             for (String pattern : patterns) {
