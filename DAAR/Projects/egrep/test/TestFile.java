@@ -2,8 +2,6 @@ package test;
 
 import org.junit.Test;
 
-import KMP.KMP;
-import Regex.Automate;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -87,7 +85,7 @@ public class TestFile {
         String[] lineInput = {
             "mamamiaaaa yola", "hello to the world!", "abcdefg patterns are used", "sequence 123abc detected", "java is fun indeed", 
             "regex101 helps with patterns", "testing a simple pattern", "this is a testcase", "debugging is essential for code", 
-            "compilation successful, no errors", "handle the trycatch block properly", "this line throws an exception", 
+            "compilation successful no errors", "handle the trycatch block properly", "this line throws an exception", 
             "function overloading is useful", "defining a function in Java", "variable names should be meaningful", "loops are fundamental",
             "ArrayList is a resizable array in Java", "hashtable stores key-value pairs", "binarytree traversal is important", 
             "recursion is a powerful technique", "sorting algorithms optimize searches", "searching efficiently in data", 
@@ -137,17 +135,10 @@ public class TestFile {
                     // Résultat attendu (founds[j])
                 boolean appearsExpected = founds[i];
                 // Résultats de la méthode KMP
-                long kmpStartTime = System.nanoTime();
-                KMP kmp = new KMP(pattern);
-                boolean foundKMP = kmp.find(line); // Rechercher le motif avec KMP
-                long kmpEndTime = System.nanoTime();
-                long kmpTime = (kmpEndTime - kmpStartTime)/1000;
-                // Résultats de la méthode DFA (automate)
-                Automate dfa = new Automate(pattern);
-                long dfaStartTime = System.nanoTime();
-                boolean foundDFA = dfa.find(line); // Rechercher le motif avec DFA
-                long dfaEndTime = System.nanoTime();
-                long dfaTime = (dfaEndTime - dfaStartTime)/1000;
+                StatMeasures.Result resKmp = StatMeasures.measureKMPTotalSearchTime(pattern, line);
+                StatMeasures.Result resDFA = StatMeasures.measureDFATotalSearchTime(pattern, line);
+                boolean foundKMP = resKmp.found,foundDFA = resDFA.found;
+                long kmpTime = resKmp.avg_time,dfaTime = resDFA.avg_time;
                 // Sauvegarder les résultats dans le fichier CSV
                 csvWriter.append(pattern + "," + line + "," + appearsExpected + "," + foundKMP + "," + foundDFA +","+ kmpTime+"," + dfaTime+ "\n");
                     

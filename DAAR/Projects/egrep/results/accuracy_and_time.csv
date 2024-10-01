@@ -1,0 +1,101 @@
+Pattern,lineInput,appears_expected,found_kmp,found_dfa,time_kmp,time_dfa
+mamamia,mamamiaaaa yola,true,true,true,118,2085
+helloworld,hello to the world!,false,false,false,138,542
+abcdefg,abcdefg patterns are used,true,true,true,14,1185
+123abc,sequence 123abc detected,true,true,true,63,856
+javaisfun,java is fun indeed,false,false,false,16,552
+regex101,regex101 helps with patterns,true,true,true,7,548
+pattern,testing a simple pattern,true,true,true,5,312
+testcase,this is a testcase,true,true,true,9,487
+debugging,debugging is essential for code,true,true,true,7,265
+compilation,compilation successful no errors,true,true,true,9,1343
+trycatch,handle the trycatch block properly,true,true,true,8,2662
+exception,this line throws an exception,true,true,true,9,464
+overload,function overloading is useful,true,true,true,8,1985
+function,defining a function in Java,true,true,true,8,323
+variable,variable names should be meaningful,true,true,true,10,669
+loop,loops are fundamental,true,true,true,2,707
+arraylist,ArrayList is a resizable array in Java,false,false,false,5,644
+hashtable,hashtable stores key-value pairs,true,true,true,5,484
+binarytree,binarytree traversal is important,true,true,true,5,814
+recursion,recursion is a powerful technique,true,true,true,5,331
+sorting,sorting algorithms optimize searches,true,true,true,2,272
+searching,searching efficiently in data,true,true,true,5,482
+algorithm,an algorithm solves a problem,true,true,true,7,544
+datastructure,data structures organize information,false,false,false,7,601
+bitwise,bitwise operations are fast,true,true,true,11,706
+andoperator,use the andoperator carefully,true,true,true,6,157
+xoroperator,xoroperator flips bits,true,true,true,2,126
+shiftoperator,shiftoperator shifts bits to the left or right,true,true,true,3,453
+modulus,modulus operation gives remainder,true,true,true,1,123
+threading,multithreading improves performance,true,true,true,2,72
+concurrency,concurrency issues need attention,true,true,true,3,736
+synchronization,synchronization avoids race conditions,true,true,true,3,433
+asynchronous,asynchronous operations increase efficiency,true,true,true,44,575
+runnable,runnable represents a task,true,true,true,1,301
+callable,callable returns a result,true,true,true,4,326
+futuretask,futuretask represents asynchronous computation,true,true,true,3,795
+singleton,singleton ensures only one instance,true,true,true,2,160
+factory,factory design pattern simplifies creation,true,true,true,1,120
+observer,observer design pattern helps in events,true,true,true,1,529
+decorator,decorator adds functionality,true,true,true,2,252
+adapter,adapter pattern adapts interfaces,true,true,true,2,106
+bridge,bridge pattern separates abstraction from implementation,true,true,true,2,134
+facade,facade simplifies complex systems,true,true,true,1,737
+proxy,proxy controls access to objects,true,true,true,1,92
+builder,builder simplifies object creation,true,true,true,6,131
+prototype,prototype pattern clones objects,true,true,true,2,331
+mediator,mediator pattern coordinates communication,true,true,true,1,267
+strategy,strategy pattern defines algorithms,true,true,true,1,239
+visitor,visitor pattern separates logic,true,true,true,1,303
+composite,composite pattern composes objects,true,true,true,1,347
+iterator,iterator pattern traverses collections,true,true,true,6,239
+command,command pattern encapsulates requests,true,true,true,18,446
+interpreter,interpreter pattern defines grammar,true,true,true,40,437
+memento,memento pattern saves object state,true,true,true,13,573
+state,state pattern represents states,true,true,true,1,404
+chainofresp,chain of responsibility passes requests,false,false,false,4,322
+templatemethod,template method defines steps,false,false,false,5,830
+abstractfactory,abstract factory creates families of objects,false,false,false,6,1364
+flyweight,flyweight pattern minimizes memory usage,true,true,true,1,149
+nullobject,null object avoids null checks,false,false,false,3,250
+mvcpattern,MVC pattern separates concerns,false,false,false,2,559
+mvppattern,MVP pattern separates logic,false,false,false,4,142
+mvvmpattern,MVVM pattern binds UI and logic,false,false,false,2,332
+reactive,reactive programming handles streams,true,true,true,1,194
+observable,observable is used in reactive programming,true,true,true,3,181
+publisher,publisher and subscriber communicate,true,true,true,1,97
+subscriber,mockito for unit tests,false,false,false,2,119
+observerpattern,JUnit framework runs tests,false,false,false,3,301
+mockito,assertion verifies conditions,false,false,false,3,159
+junit,integration tests check system interactions,false,false,false,1,104
+assertion,unit testing is essential,false,false,false,2,248
+integration,regression tests catch bugs,false,false,false,5,287
+unitesting,load testing ensures system performance,false,false,false,2,160
+regression,security testing finds vulnerabilities,false,false,false,3,210
+loadtesting,performance testing measures speed,false,false,false,33,292
+securitytest,stress testing pushes system limits,false,false,false,2,279
+performance,scalability testing for growth,false,false,false,2,248
+stress,concurrency tests check for issues,false,false,false,35,189
+scalability,parallel tests run simultaneously,false,false,false,3,311
+concurrencytest,functional testing ensures requirements,false,false,false,13,455
+paralleltest,blackbox testing ignores internals,false,false,false,2,583
+functionaltest,whitebox testing checks internal logic,false,false,false,3,303
+blackboxtest,greybox testing combines both,false,false,false,9,840
+whiteboxtest,usability testing for user experience,false,false,false,2,936
+greyboxtest,accessibility testing for all users,false,false,false,2,151
+usabilitytest,localization adapts to languages,false,false,false,3,622
+accessibility,globalization prepares for worldwide use,false,false,false,4,510
+localization,benchmark testing measures performance,false,false,false,2,141
+globalization,profiling finds performance issues,false,false,false,3,186
+benchmark,bottleneck detected in the system,false,false,false,2,106
+profiling,heap dump shows memory usage,false,false,false,2,180
+bottleneck,thread dump shows running threads,false,false,false,8,315
+heapdump,GC roots point to live objects,false,false,false,1,182
+threaddump,leak detection for memory issues,false,false,false,9,310
+gcroots,lock contention slows down processes,false,false,false,5,178
+leakdetection,deadlock detected between threads,false,false,false,12,565
+lockcontention,thread pool manages threads,false,false,false,4,517
+deadlock,fork join splits tasks,false,false,false,9,177
+threadpool,parallel stream processes data in parallel,false,false,false,2,97
+forkjoin,mutex controls access to resources,false,false,false,1,173
