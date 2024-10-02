@@ -42,10 +42,10 @@ public class StatMeasures {
         }
         return times.stream().mapToLong(l -> l).toArray();
     }
-    public static Result measureKMPTotalSearchTime(String pattern,String line) {
+    public static Result measureKMPTotalSearchTime(String pattern,String line,int rep) {
         List<Long> times = new ArrayList<>();
         boolean foundKMP=false;
-        for (int i = 0; i < 100; i++) { // Faire 100 itérations pour la moyenne
+        for (int i = 0; i < rep; i++) { // Faire 100 itérations pour la moyenne
             long startTime = System.nanoTime();
             KMP kmp = new KMP(pattern);
             foundKMP= kmp.find(line); // Rechercher le motif avec KMP
@@ -56,10 +56,10 @@ public class StatMeasures {
         long avg_time = average(times.stream().mapToLong(l -> l).toArray()); 
         return (new Result(avg_time,foundKMP));
     }
-    public static Result measureDFATotalSearchTime(String regEx,String line) {
+    public static Result measureDFATotalSearchTime(String regEx,String line,int rep) {
         List<Long> times = new ArrayList<>();
         boolean foundDFA=false;
-        for (int i = 0; i < 100; i++) { // Faire 100 itérations pour la moyenne
+        for (int i = 0; i < rep; i++) { // Faire 100 itérations pour la moyenne
             long startTime = System.nanoTime();
             Automate dfa = new Automate(regEx); // Création de l'automate DFA
             foundDFA= dfa.find(line); // Rechercher le motif avec DFA

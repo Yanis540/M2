@@ -85,12 +85,7 @@ public class KMP {
         } while (changed);
     }
     public boolean find(String text) {
-        return this.findPairs(text).size() !=0; 
-    }
-    public List<Pair> findPairs(String text) {
-
-        List<Pair> matches = new ArrayList<>();
-
+        
         int i = 0, j = 0;
 
         while (i < text.length()) {
@@ -99,8 +94,7 @@ public class KMP {
                 j++;
 
                 if (j == pattern.length()) {
-                    matches.add(new Pair(i - j, i - 1));
-                    j = 0;
+                    return true;
                 }
             } else if (j != 0) {
                 j = carryOver[j];
@@ -113,8 +107,7 @@ public class KMP {
             }
 
         }
-
-        return matches;
+        return false;
     }
 }
 class Pair {
