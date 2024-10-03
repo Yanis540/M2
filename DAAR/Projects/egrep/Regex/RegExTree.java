@@ -19,6 +19,17 @@ public class RegExTree {
             result += "," + subTrees.get(i).toString();
         return result + ")";
     }
+    public boolean isTreeConcat() {
+        if (root != RegEx.CONCAT && !(0 < root && root < 128)) {
+          return false;
+        }
+        for (RegExTree subTree : subTrees) {
+          if (!subTree.isTreeConcat()) {
+            return false;
+          }
+        }
+        return true;
+      }
 
     private String rootToString() {
         if (root == RegEx.CONCAT)
