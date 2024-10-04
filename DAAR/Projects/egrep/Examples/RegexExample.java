@@ -13,7 +13,7 @@ public class RegexExample {
         String regEx, fileName;
         System.out.println(args.length);
         regEx = (args.length==2 && args[0]==null)?args[0]:"S((a|g|r)*)on";
-        fileName = (args.length==2 && args[1]==null)?args[1]:"./DAAR/Projects/egrep/file.txt";
+        fileName = (args.length==2 && args[1]==null)?args[1]:TestFile.BASE_FILE_PATH+"/file.txt";
         System.out.println("  >> regEx : " + regEx);
         System.out.println("  >> file name : " + fileName);
         long startTime = System.currentTimeMillis();
@@ -63,13 +63,13 @@ public class RegexExample {
         NDFA ndfa = automate.getNDfa();
         // ndfa.print();
         // Générer le fichier .dot pour le NDFA
-        String ndfaDotFile = TestFile.BASE_FILE_PATH+"/ndfa.dot";
+        String ndfaDotFile = TestFile.BASE_FILE_PATH+"/results/ndfa.dot";
         ndfa.toDotFile(ndfaDotFile);
         System.out.println("Fichier .dot pour le NDFA créé : " + ndfaDotFile);
         DFA dfa = automate.getDfa();
         System.out.println("DFA généré :");
         // dfa.print();
-        String dfaDotFile = TestFile.BASE_FILE_PATH+"dfa.dot";
+        String dfaDotFile = TestFile.BASE_FILE_PATH+"/results/dfa.dot";
         dfa.toDotFile(dfaDotFile);
         System.out.println("Fichier .dot pour le DFA créé : " + dfaDotFile);
         

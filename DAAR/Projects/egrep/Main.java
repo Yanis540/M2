@@ -9,9 +9,9 @@ public class Main {
   
     public static void main(String[] args) {
         // RegexExample.exampleDFA(args);
-        // RegexExample.starterDFAExample();
+        RegexExample.starterDFAExample();
         // KMPExample.starterKMP();
-        KMPExample.exampleKMP(args);
+        // KMPExample.exampleKMP(args);
     }
    
     public static boolean isSimpleConcatenation(String regex) {

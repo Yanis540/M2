@@ -1,7 +1,5 @@
 package KMP;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public class KMP {
 
@@ -75,11 +73,10 @@ public class KMP {
                 if (lps[i] != -1 && pattern.charAt(i) == pattern.charAt(lps[i])) {
                     if (lps[lps[i]] != -1) {
                         lps[i] = lps[lps[i]];
-                        changed = true;
                     } else {
                         lps[i] = -1;
-                        changed = true;
                     }
+                    changed = true;
                 }
             }
         } while (changed);
@@ -108,22 +105,5 @@ public class KMP {
 
         }
         return false;
-    }
-}
-class Pair {
-    private final int startIndex;
-    private final int endIndex;
-
-    public Pair(int startIndex, int endIndex) {
-        this.startIndex = startIndex;
-        this.endIndex = endIndex;
-    }
-
-    public int getStartIndex() {
-        return startIndex;
-    }
-
-    public int getEndIndex() {
-        return endIndex;
     }
 }

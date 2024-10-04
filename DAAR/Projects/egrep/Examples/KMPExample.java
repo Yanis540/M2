@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import KMP.KMP;
 import Reader.Reader;
+import test.TestFile;
 
 
 public class KMPExample {
@@ -11,7 +12,7 @@ public class KMPExample {
         String pattern, fileName;
         System.out.println(args.length);
         pattern = (args.length==2 && args[0]==null)?args[0]:"Sargon";
-        fileName = (args.length==2 && args[1]==null)?args[1]:"./DAAR/Projects/egrep/file.txt";
+        fileName = (args.length==2 && args[1]==null)?args[1]:TestFile.BASE_FILE_PATH+"/file.txt";
         System.out.println("  >> pattern : " + pattern);
         System.out.println("  >> file name : " + fileName);
         long startTime = System.currentTimeMillis();
