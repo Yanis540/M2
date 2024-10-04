@@ -2,7 +2,9 @@ package test;
 
 import org.junit.Test;
 
+import KMP.KMP;
 import Reader.Reader;
+import Regex.Automate;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -214,6 +216,8 @@ public class TestFile {
         };
         try {
             String input = Reader.readFile(BASE_FILE_PATH + "/file.txt");
+            String[] inputs = input.split("\n");
+            System.out.println(">>>>>>>>>>>>"+inputs.length);
             boolean[] founds = new boolean[mostCommonWords.length];
             for (int i = 0; i < founds.length; i++) {
                 founds[i] = input.contains(mostCommonWords[i]);
@@ -221,33 +225,51 @@ public class TestFile {
             // Initialisation du fichier CSV
             FileWriter csvWriter = new FileWriter(BASE_FILE_PATH + "/results/gutenberg_most_command_words.csv");
             csvWriter.append("Pattern,appears_expected,found_kmp,found_dfa,time_kmp,time_dfa,lineNumber_kmp,lineNumber_dfa\n");
-
+            
             // Parcours de chaque motif
             for (int i = 0; i < mostCommonWords.length; i++) {
                 String pattern = mostCommonWords[i];
                 boolean appearsExpected = founds[i];
-                StatMeasures.Result resKmp=null,resDFA=null;
+                StatMeasures.Result resKMP= new StatMeasures.Result(0,false),resDFA = new StatMeasures.Result(0,false);
                 
                 // Résultats de la méthode KMP
                 int lineNumber_kmp=-1,lineNumber_dfa=-1;
                 int lineNumber=1;
-                for(String line : input.split("\n")){
-                    // en gros si tu l'as déjà trouvé pas la peine de recalculer
-                    resKmp= lineNumber_kmp!=-1 ? resKmp: StatMeasures.measureKMPTotalSearchTime(pattern, line,2);
-                    resDFA = lineNumber_dfa!=-1 ? resDFA :StatMeasures.measureDFATotalSearchTime(pattern, line,2);
-                    if(lineNumber_kmp==-1 && resKmp.found==true){
-                        lineNumber_kmp= lineNumber;
-                    }
-                    if(lineNumber_dfa==-1 && resDFA.found==true){
-                        lineNumber_dfa= lineNumber;
-                    }
-                    if(resKmp.found && resDFA.found){
+                //! DFA
+                long startTime = System.nanoTime();
+                Automate automate = new Automate(pattern);
+                for(String line : inputs){
+                    if(automate.find(line)){
+                        resDFA.found = true;
+                        lineNumber_dfa = lineNumber;
                         break;
                     }
+                    
                     lineNumber++;
                 }
+                long endTime = System.nanoTime();
+                long timeInMicroSeconds = (endTime - startTime)/1000; 
+                resDFA.avg_time = timeInMicroSeconds;
 
-                csvWriter.append(pattern + ","+appearsExpected + "," + resKmp.found + "," + resDFA.found + "," + resKmp.avg_time + ","
+                //! KMP
+                lineNumber = 1; 
+                startTime = System.nanoTime();
+                KMP kmp = new KMP(pattern);
+                for(String line : inputs){
+                    if(kmp.find(line)){
+                        resKMP.found = true;
+                        lineNumber_kmp = lineNumber;
+                        break;
+                    }
+                    
+                    lineNumber++;
+                }
+                endTime = System.nanoTime();
+                timeInMicroSeconds = (endTime - startTime)/1000; 
+                resKMP.avg_time = timeInMicroSeconds;
+
+
+                csvWriter.append(pattern + ","+appearsExpected + "," + resKMP.found + "," + resDFA.found + "," + resKMP.avg_time + ","
                 + resDFA.avg_time +","+lineNumber_kmp+","+lineNumber_dfa+ "\n");
                   // Fermeture du fichier CSV
                 csvWriter.flush();
