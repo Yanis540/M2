@@ -9,7 +9,7 @@ import Regex.NDFA;
 import test.TestFile;
 
 public class RegexExample {
-    public static void exampleDFA(String[]args){
+    public static void findRegexInFileWithDFA(String[]args){
         String regEx, fileName;
         System.out.println(args.length);
         regEx = (args.length==2 && args[0]==null)?args[0]:"S((a|g|r)*)on";

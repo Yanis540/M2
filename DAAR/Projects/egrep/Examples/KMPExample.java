@@ -8,7 +8,7 @@ import test.TestFile;
 
 
 public class KMPExample {
-    public static void exampleKMP(String[]args){
+    public static void findPatternInFileWithKMP(String[]args){
         String pattern, fileName;
         System.out.println(args.length);
         pattern = (args.length==2 && args[0]==null)?args[0]:"Sargon";
