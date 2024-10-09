@@ -21,6 +21,10 @@ services:
     build : ./database
     environment:
       POSTGRES_PASSWORD: Yanis123
+    command: ["postgres", "-c", "config_file=/etc/postgresql.conf"]
+    volumes:
+      - ./postgresql.conf:/var/lib/postgresql/data/postgresql.conf
+      - ./pg-data:/var/lib/postgresql/data
 
     ports : 
       - "5432:5432"
