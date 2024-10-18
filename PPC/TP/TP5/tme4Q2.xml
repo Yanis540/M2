@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.6//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_6.dtd'>
+<nta>
+	<declaration>// Place global declarations here.
+chan get_f, put_c, put_f, ch, fg, st;
+clock global; 
+urgent chan get_c;
+
+
+int [0,1] libre;
+
+const int M = 10;
+int [0,M] mets;</declaration>
+	<template>
+		<name x="5" y="5">serveur</name>
+		<declaration>// Place local declarations here.
+</declaration>
+		<location id="id0" x="-88" y="-240">
+			<name x="-98" y="-274">final</name>
+		</location>
+		<location id="id1" x="-88" y="-296">
+		</location>
+		<location id="id2" x="-152" y="-296">
+		</location>
+		<location id="id3" x="-152" y="-240">
+		</location>
+		<location id="id4" x="-208" y="-240">
+		</location>
+		<location id="id5" x="-208" y="-296">
+		</location>
+		<location id="id6" x="-288" y="-296">
+		</location>
+		<location id="id7" x="-288" y="-240">
+		</location>
+		<location id="id8" x="-360" y="-296">
+		</location>
+		<location id="id9" x="-424" y="-296">
+		</location>
+		<location id="id10" x="-360" y="-240">
+		</location>
+		<init ref="id9"/>
+		<transition id="id11">
+			<source ref="id1"/>
+			<target ref="id0"/>
+			<label kind="synchronisation" x="-80" y="-280">ch!</label>
+		</transition>
+		<transition id="id12">
+			<source ref="id2"/>
+			<target ref="id1"/>
+			<label kind="synchronisation" x="-128" y="-320">fg!</label>
+		</transition>
+		<transition id="id13">
+			<source ref="id3"/>
+			<target ref="id2"/>
+			<label kind="synchronisation" x="-144" y="-280">fg!</label>
+		</transition>
+		<transition id="id14">
+			<source ref="id4"/>
+			<target ref="id3"/>
+			<label kind="synchronisation" x="-192" y="-232">fg!</label>
+		</transition>
+		<transition id="id15">
+			<source ref="id5"/>
+			<target ref="id4"/>
+			<label kind="synchronisation" x="-240" y="-280">ch!</label>
+		</transition>
+		<transition id="id16">
+			<source ref="id6"/>
+			<target ref="id5"/>
+			<label kind="synchronisation" x="-264" y="-320">ch!</label>
+		</transition>
+		<transition id="id17">
+			<source ref="id7"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="-320" y="-280">fg!</label>
+		</transition>
+		<transition id="id18">
+			<source ref="id10"/>
+			<target ref="id7"/>
+			<label kind="synchronisation" x="-328" y="-240">st!</label>
+		</transition>
+		<transition id="id19">
+			<source ref="id8"/>
+			<target ref="id10"/>
+			<label kind="synchronisation" x="-392" y="-280">fg!</label>
+		</transition>
+		<transition id="id20">
+			<source ref="id9"/>
+			<target ref="id8"/>
+			<label kind="synchronisation" x="-408" y="-320">st!</label>
+		</transition>
+	</template>
+	<template>
+		<name>cuillere</name>
+		<location id="id21" x="-1112" y="-416">
+			<name x="-1122" y="-446">free</name>
+		</location>
+		<location id="id22" x="-992" y="-416">
+			<name x="-1002" y="-446">taken</name>
+		</location>
+		<init ref="id21"/>
+		<transition id="id23">
+			<source ref="id22"/>
+			<target ref="id21"/>
+			<label kind="synchronisation" x="-1072" y="-368">put_c?</label>
+			<nail x="-1008" y="-344"/>
+			<nail x="-1096" y="-344"/>
+		</transition>
+		<transition id="id24">
+			<source ref="id21"/>
+			<target ref="id22"/>
+			<label kind="synchronisation" x="-1080" y="-440">get_c?</label>
+		</transition>
+	</template>
+	<template>
+		<name>fourchette</name>
+		<location id="id25" x="-264" y="-264">
+		</location>
+		<location id="id26" x="-400" y="-264">
+		</location>
+		<init ref="id26"/>
+		<transition id="id27">
+			<source ref="id25"/>
+			<target ref="id26"/>
+			<label kind="synchronisation" x="-352" y="-232">put_f?</label>
+			<nail x="-280" y="-208"/>
+			<nail x="-384" y="-208"/>
+		</transition>
+		<transition id="id28">
+			<source ref="id26"/>
+			<target ref="id25"/>
+			<label kind="synchronisation" x="-352" y="-280">get_f?</label>
+		</transition>
+	</template>
+	<template>
+		<name>client</name>
+		<declaration>clock x;
+</declaration>
+		<location id="id29" x="-8" y="0">
+			<name x="-18" y="-30">EAT_S</name>
+			<label kind="invariant" x="-18" y="17">22&gt;=x and x&gt;=20</label>
+		</location>
+		<location id="id30" x="-16" y="-64">
+			<name x="-26" y="-94">EAT_FG_F</name>
+			<label kind="invariant" x="-26" y="-47">17&gt;=x and x&gt;=15</label>
+		</location>
+		<location id="id31" x="-16" y="-128">
+			<name x="-26" y="-158">EAT_FG_C</name>
+			<label kind="invariant" x="-26" y="-111">12&gt;=x and x&gt;=10</label>
+		</location>
+		<location id="id32" x="-16" y="-208">
+			<name x="-26" y="-238">DRINK</name>
+			<label kind="invariant" x="-26" y="-191">7&gt;=x and x&gt;=5</label>
+		</location>
+		<location id="id33" x="-168" y="0">
+			<name x="-178" y="-30">ST_S</name>
+		</location>
+		<location id="id34" x="-168" y="-104">
+			<name x="-178" y="-134">FG_S</name>
+		</location>
+		<location id="id35" x="-168" y="-208">
+			<name x="-178" y="-238">CH_S</name>
+		</location>
+		<location id="id36" x="-272" y="-104">
+			<name x="-304" y="-136">BEGIN</name>
+		</location>
+		<init ref="id36"/>
+		<transition id="id37">
+			<source ref="id29"/>
+			<target ref="id36"/>
+			<label kind="synchronisation" x="-80" y="56">put_c!</label>
+			<label kind="assignment" x="34" y="-8">x:=0</label>
+			<nail x="72" y="24"/>
+			<nail x="72" y="56"/>
+			<nail x="-272" y="56"/>
+		</transition>
+		<transition id="id38">
+			<source ref="id30"/>
+			<target ref="id36"/>
+			<label kind="synchronisation" x="128" y="-56">put_f!</label>
+			<label kind="assignment" x="2" y="-64">x:=0</label>
+			<nail x="128" y="-64"/>
+			<nail x="128" y="48"/>
+			<nail x="-272" y="48"/>
+		</transition>
+		<transition id="id39">
+			<source ref="id31"/>
+			<target ref="id36"/>
+			<label kind="synchronisation" x="112" y="-120">put_c!</label>
+			<label kind="assignment" x="2" y="-128">x:=0</label>
+			<nail x="112" y="-128"/>
+			<nail x="112" y="40"/>
+			<nail x="-272" y="40"/>
+		</transition>
+		<transition id="id40">
+			<source ref="id32"/>
+			<target ref="id36"/>
+			<label kind="assignment" x="2" y="-208">x:=0</label>
+			<nail x="96" y="-208"/>
+			<nail x="96" y="32"/>
+			<nail x="-272" y="32"/>
+		</transition>
+		<transition id="id41">
+			<source ref="id35"/>
+			<target ref="id32"/>
+			<label kind="assignment" x="-150" y="-208">x:=0</label>
+		</transition>
+		<transition id="id42">
+			<source ref="id36"/>
+			<target ref="id33"/>
+			<label kind="guard" x="-256" y="-16">mets &lt; M</label>
+			<label kind="synchronisation" x="-200" y="-56">st?</label>
+			<label kind="assignment" x="-256" y="-32">mets++</label>
+		</transition>
+		<transition id="id43">
+			<source ref="id33"/>
+			<target ref="id29"/>
+			<label kind="synchronisation" x="-96" y="-24">get_c!</label>
+			<label kind="assignment" x="-150" y="0">x:=0</label>
+		</transition>
+		<transition id="id44">
+			<source ref="id34"/>
+			<target ref="id30"/>
+			<label kind="synchronisation" x="-88" y="-104">get_f!</label>
+			<label kind="assignment" x="-150" y="-84">x:=0</label>
+		</transition>
+		<transition id="id45">
+			<source ref="id34"/>
+			<target ref="id31"/>
+			<label kind="synchronisation" x="-102" y="-153">get_c!</label>
+			<label kind="assignment" x="-150" y="-116">x:=0</label>
+		</transition>
+		<transition id="id46">
+			<source ref="id36"/>
+			<target ref="id34"/>
+			<label kind="guard" x="-232" y="-104">mets&lt;M</label>
+			<label kind="synchronisation" x="-216" y="-128">fg?</label>
+			<label kind="assignment" x="-232" y="-88">mets++</label>
+		</transition>
+		<transition id="id47">
+			<source ref="id36"/>
+			<target ref="id35"/>
+			<label kind="guard" x="-195" y="-187">mets&lt;M</label>
+			<label kind="synchronisation" x="-208" y="-208">ch?</label>
+			<label kind="assignment" x="-200" y="-160">mets++</label>
+		</transition>
+	</template>
+	<system>
+Client1 = client ();
+Client2 = client ();
+
+system cuillere, fourchette, Client1, Client2, serveur;</system>
+	<queries>
+		<query>
+			<formula>sup:global</formula>
+			<comment/>
+			<result outcome="success" type="quantity" value="∞" timestamp="2024-10-16 12:05:49 +0200">
+				<details>∞</details>
+			</result>
+		</query>
+		<query>
+			<formula>A&lt;&gt;serveur.final</formula>
+			<comment/>
+			<result outcome="failure" type="quality" timestamp="2024-10-16 11:57:02 +0200">
+			</result>
+		</query>
+	</queries>
+</nta>
