@@ -1,0 +1,62 @@
+# Click the Variables button, above, to create your own variables.
+GET / 
+GET _cat/nodes?v
+GET /_cat/nodes?v&h=name,ip,diskUsed,diskAvail,diskUsedPercent
+
+PUT customer/_doc/1
+{
+  "name":"John Doe", 
+  "age": 3
+}
+PUT customer/_doc/2
+{
+  "name":"John Doe 2", 
+  "age": 5
+}
+PUT customer/_doc/3
+{
+  "name":"John Doe 3", 
+  "age": 10
+}
+GET customer/_doc/1
+
+POST comments/_bulk 
+{"index":{"_id":3}}
+{"title":"Truning Go Apps with metricbeat","category":"Engineering"}
+GET comments/_doc/3
+
+GET customer/_search 
+{
+  "size": 1, 
+  "sort": [
+    { "age": "asc" }
+  ],
+  "query": {
+    "match_all": {}
+  }
+   
+  
+}
+GET customer/_search 
+{
+  "size": 0,
+  "aggs": {
+    "group_by_age": {
+      "terms": {
+        "field": "age",
+        "order": {
+          "_key": "desc"  // Trie par la valeur de la clé (ici, l'âge) en ordre décroissant
+        },
+        "size": 1  // Limite à l'âge le plus élevé
+      },
+      "aggs": {
+        "oldest_people": {
+          "top_hits": {
+            "from": 0,
+            "size": 10  // Limite à 3 personnes
+          }
+        }
+      }
+    }
+  }
+}

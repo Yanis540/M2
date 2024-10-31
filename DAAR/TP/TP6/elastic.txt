@@ -1,0 +1,24 @@
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Elasticsearch security features have been automatically configured!
+2024-10-22 18:25:47 -> Authentication is enabled and cluster connections are encrypted.
+2024-10-22 18:25:47 
+2024-10-22 18:25:47 ->  Password for the elastic user (reset with `bin/elasticsearch-reset-password -u elastic`):
+2024-10-22 18:25:47   TWNqleiQmMK=ue91Q*5k
+2024-10-22 18:25:47 
+2024-10-22 18:25:47 ->  HTTP CA certificate SHA-256 fingerprint:
+2024-10-22 18:25:47   a5b96eca18e92cbb8cc27826b0619c7127a9bbd2c968392d31f6c133946dcb19
+2024-10-22 18:25:47 
+2024-10-22 18:25:47 ->  Configure Kibana to use this cluster:
+2024-10-22 18:25:47 * Run Kibana and click the configuration link in the terminal when Kibana starts.
+2024-10-22 18:25:47 * Copy the following enrollment token and paste it into Kibana in your browser (valid for the next 30 minutes):
+2024-10-22 18:25:47   eyJ2ZXIiOiI4LjQuMyIsImFkciI6WyIxNzIuMjEuMC4yOjkyMDAiXSwiZmdyIjoiYTViOTZlY2ExOGU5MmNiYjhjYzI3ODI2YjA2MTljNzEyN2E5YmJkMmM5NjgzOTJkMzFmNmMxMzM5NDZkY2IxOSIsImtleSI6IldIRU10WklCejlsMFQ4MWZkUjkxOmxIdXFOMHIyUkRtMm84Yi1wTXVTZHcifQ==
+2024-10-22 18:25:47 
+2024-10-22 18:25:47 -> Configure other nodes to join this cluster:
+2024-10-22 18:25:47 * Copy the following enrollment token and start new Elasticsearch nodes with `bin/elasticsearch --enrollment-token <token>` (valid for the next 30 minutes):
+2024-10-22 18:25:47   eyJ2ZXIiOiI4LjQuMyIsImFkciI6WyIxNzIuMjEuMC4yOjkyMDAiXSwiZmdyIjoiYTViOTZlY2ExOGU5MmNiYjhjYzI3ODI2YjA2MTljNzEyN2E5YmJkMmM5NjgzOTJkMzFmNmMxMzM5NDZkY2IxOSIsImtleSI6IlduRU10WklCejlsMFQ4MWZkUl9JOkgxSHlIVElxVHd1aVVtVUMwRWI0V0EifQ==
+2024-10-22 18:25:47 
+2024-10-22 18:25:47   If you're running in Docker, copy the enrollment token and run:
+2024-10-22 18:25:47   `docker run -e "ENROLLMENT_TOKEN=<token>" docker.elastic.co/elasticsearch/elasticsearch:8.4.3`
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
