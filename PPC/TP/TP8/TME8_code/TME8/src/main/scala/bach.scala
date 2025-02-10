@@ -32,13 +32,20 @@ class BachActor extends Actor {
 def receive = {
     case "START" => {
       println("start")
-      play(exemple)
+      // play(exemple)
+      // println(duration(exemple))
+      // play(transpose(exemple, 2))
+      // play(retrograde(exemple))
+      play(exemple2)
+      println(duration(exemple2))
 
     } 
     
         
 }
 
+
+ 
 /////////////////////////////////////////////////
 
 //Question 1
@@ -60,7 +67,7 @@ val exemple = Parallel(List(
   ))
 ))
 
-
+val exemple2 = canon(repeat(exemple,3),4000)
 
 //Question 2
  
@@ -92,8 +99,7 @@ val exemple = Parallel(List(
                         l.foreach(n=>{play_midi(n,date); date = date + duration(n)})}
     case Parallel (l) => l.foreach(n=>play_midi(n,at))
   }
-  
-/*
+
  // Copy un objet musical
   def copy (obj:ObjectMusical):ObjectMusical =
   obj match {
@@ -153,18 +159,32 @@ obj match {
 
 
 // make a sequential avec n fois obj  
-  def repeat (obj:ObjectMusical, n:Int):ObjectMusical =
-  //code here
+  def repeat (obj:ObjectMusical, n:Int):ObjectMusical ={
+    if (n <= 1) obj  
+    else {
+      Sequential(List.fill(n)(obj)  )
+    }
+
+  }
 
 // make obj en parallele avec lui meme avec un decalage de n ms.
-  def canon (obj:ObjectMusical, n:Int):ObjectMusical =
-  //code here
+  def canon (obj:ObjectMusical, n:Int):ObjectMusical ={
+    if(n<=0) obj
+    else {
+      Parallel(
+        List(
+          obj,
+          Sequential(List(Rest(n), obj))
+        )
+      ) 
+    }
+  }
 
 
 //  Met obj1 et obj2 en seqeunce 
   def concat (obj1:ObjectMusical, obj2:ObjectMusical):ObjectMusical =
-  //code here
-*/
+    Sequential(List(obj1,obj2))
+
 
 //Question 5 BACH
  val voix1 = Sequential ( List (
