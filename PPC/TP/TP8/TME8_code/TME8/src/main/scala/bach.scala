@@ -36,8 +36,11 @@ def receive = {
       // println(duration(exemple))
       // play(transpose(exemple, 2))
       // play(retrograde(exemple))
-      play(exemple2)
-      println(duration(exemple2))
+      // play(exemple2)
+      //play(voix1)
+      //play(voix2)
+      println(duration(canon_Bach()))
+      play(canon_Bach())
 
     } 
     
@@ -225,11 +228,20 @@ val voix2 = Sequential (List (
   Note (52 , 125 , 100 ),Note (53 , 125 , 100 ),Note (55 , 125 , 100 ),
   Note (58 , 125 , 100 ),Note (57 , 125 , 100 ),Note (55 , 125 , 100 )))
 
-/*
+val voix_3_non_decalee = transpose(voix2, 7)
+val voix3 = concat( Rest(4000), voix_3_non_decalee)
+val voix_roi_base:ObjectMusical = Parallel(
+  List((voix1), voix3,voix2)
+);
+
 def canon_Bach ():ObjectMusical = {
     // ????
+    var voix_roi = Sequential(
+      List.range(0, 5).map(i => transpose(voix_roi_base, i * 2))
+    )
+    voix_roi
   }
-*/
+
 }
 //////////////////////////////////////////////////
 
