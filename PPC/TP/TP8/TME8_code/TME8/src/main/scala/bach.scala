@@ -228,16 +228,18 @@ val voix2 = Sequential (List (
   Note (52 , 125 , 100 ),Note (53 , 125 , 100 ),Note (55 , 125 , 100 ),
   Note (58 , 125 , 100 ),Note (57 , 125 , 100 ),Note (55 , 125 , 100 )))
 
-val voix_3_non_decalee = transpose(voix2, 7)
-val voix3 = concat( Rest(4000), voix_3_non_decalee)
-val voix_roi_base:ObjectMusical = Parallel(
-  List((voix1), voix3,voix2)
-);
+
 
 def canon_Bach ():ObjectMusical = {
     // ????
     var voix_roi = Sequential(
-      List.range(0, 5).map(i => transpose(voix_roi_base, i * 2))
+      List.range(0, 5).map { i =>
+        val voix1_trans = transpose(voix1, i * 2)
+        val voix2_trans = transpose(voix2, i * 2)
+        val voix3_trans = concat(Rest(2000), transpose(voix2, 7 + i * 2)) // Décalage toujours de 2000 ms
+
+        Parallel(List(voix1_trans, voix2_trans, voix3_trans))
+      }
     )
     voix_roi
   }
