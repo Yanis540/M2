@@ -134,8 +134,7 @@ val exemple2 = canon(repeat(exemple,3),4000)
 // Question 4
  
 // Transpose obj de n demitons
-  def transpose (obj:ObjectMusical, n:Int ):ObjectMusical =
-obj match {
+  def transpose (obj:ObjectMusical, n:Int ):ObjectMusical =obj match {
   case Note(p,d,v) => Note(p+n,d,v)
   case Rest(d) => Rest(d)
   case Parallel (l) => Parallel (l.map(transpose (_,n)))
@@ -143,8 +142,7 @@ obj match {
 }
 
 // mirror de obj au tour du center c 
-  def mirror (obj:ObjectMusical, c:Int ):ObjectMusical =
-obj match {
+  def mirror (obj:ObjectMusical, c:Int ):ObjectMusical = obj match {
   case Note(p,d,v) => Note(c - (p - c),d,v)
   case Rest(d) => Rest(d)
   case Parallel (l) => Parallel (l.map(mirror (_,c)))
@@ -152,8 +150,7 @@ obj match {
 }
 
 // retrograde un obj  
-  def retrograde (obj:ObjectMusical):ObjectMusical =
-obj match {
+  def retrograde (obj:ObjectMusical):ObjectMusical =obj match {
   case Sequential (l) => Sequential (l.reverse.map(retrograde))
   case o => o
 }
