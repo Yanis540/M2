@@ -47,14 +47,12 @@ class Player () extends Actor{
 
   def receive = {
     case Measure(chords:List[Chord]) => {
-      println("RECEIVING THE CHORDS ON PLAYER : ")
       println(chords.length)
       chords.foreach (c => c.notes.foreach (note => 
         self ! MidiNote(note.pitch, note.vol, note.dur, c.date)
       ))
     }
     case MidiNote(p,v, d, at) => {
-      println("PLAYING THE CHORD")
       context.system.scheduler.scheduleOnce ((at) milliseconds) (Player.note_on (p,v,10))
       context.system.scheduler.scheduleOnce ((at+d) milliseconds) (Player.note_off (p,10))
     }
