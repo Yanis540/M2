@@ -20,6 +20,7 @@ object Messages {
   case class Heartbeat(t:Terminal)
   case object CheckAvaiableMusicians
   case class CheckAvaiableMusiciansResponse(m:Map[Terminal,Boolean])
+  case object ConductorAlive
 
 }
 object Oreille {
@@ -29,7 +30,7 @@ class Oreille(musiciens: List[Terminal], id: Int) extends Actor {
 	import Messages._
 	import Oreille._
 	var activeMusiciens = musiciens.map(m => m -> false).toMap
-	val TIME_TO_ASSUME_DEAD = 3000
+	val TIME_TO_ASSUME_DEAD = 10000
 
 	// save all the timelaps of the last heartbeat for each musician
 	var musiciansHeartbeats = musiciens.map(m => m -> System.currentTimeMillis()).toMap
@@ -62,7 +63,7 @@ class Coeur(val musician:Terminal,musiciens: List[Terminal]) extends Actor {
   	import Coeur._
 	// select the musician 
 	
-	val oreille = context.actorSelection("../Oreille")
+	val oreille = context.actorSelection("../oreille")
   	context.system.scheduler.scheduleOnce(1.seconds) (self ! StartBeat)
   	def receive: Receive = {
 		
@@ -75,13 +76,14 @@ class Coeur(val musician:Terminal,musiciens: List[Terminal]) extends Actor {
 			m.foreach(println)
 			// send for each 
 			m.foreach((v) => v match {
-				case (t, _) => {
-					if(t.id != musician.id){
-						val ip = t.ip.replace("\"", "")
-						val actorPath = s"akka.tcp://MozartSystem${t.id}@${ip}:${t.port}/user/Musicien${t.id}/Oreille"
-						val actorToSend = context.actorSelection(actorPath)
-						println("Sending Heartbeat to " + actorPath)
-						actorToSend ! Heartbeat(musician)
+				case (t, isActive) => {
+					val ip = t.ip.replace("\"", "")
+					val actorPath = s"akka.tcp://MozartSystem${t.id}@${ip}:${t.port}/user/Musicien${t.id}/oreille"
+					val actorToSend = context.actorSelection(actorPath)
+					actorToSend ! Heartbeat(musician)
+					context.actorSelection(actorPath).resolveOne(1.second).onComplete {
+						case scala.util.Success(ref) => println(s"DEBUG: Found Oreille actor at ${actorPath}")
+						case scala.util.Failure(ex) => println(s"ERROR: Could not find Oreille actor at ${actorPath} - ${ex.getMessage}")
 					}
 				}
 			})
@@ -89,15 +91,60 @@ class Coeur(val musician:Terminal,musiciens: List[Terminal]) extends Actor {
 	}
 }
 object Conductor {
-  case class ConductorUpdateStatus()
+  case class ConductorStart()
+  case class ConductorSendIsStillAlive()
 }
 class Conductor(musiciens: List[Terminal]) extends Actor {
-  import Messages._
-  import Conductor._
-  var statuses: Map[Int, Int] = musiciens.map(m => m.id -> 1).toMap
-  def receive: Receive = {
-    case Heartbeat(t) => statuses = statuses.updated(t.id, 1)
-  }
+	import Messages._
+	import Conductor._
+	import Musicien._
+	val oreille = context.actorSelection("../oreille")
+	var currentMusician: Option[Terminal] = None
+	def receive: Receive = {
+		case ConductorStart =>{
+			context.system.scheduler.scheduleOnce(1.seconds) (self ! ConductorSendIsStillAlive)
+		}
+		case ConductorSendIsStillAlive =>{
+			oreille ! CheckAvaiableMusicians
+		}
+		case CheckAvaiableMusiciansResponse(musicianStatus) => {
+			println("Received the response from the musicians :"+musicianStatus)
+			currentMusician match {
+				case Some(m) if musicianStatus.getOrElse(m, true) =>
+				println(s"Current musician ${m.id} is still active, no change needed.")
+				
+				case _ =>
+				// Find an active musician
+				val activeMusicians = musicianStatus.collect { case (m, true) => m }.toList
+				System.out.println("Active musicians: " + activeMusicians)
+				if (activeMusicians.nonEmpty) {
+					val newMusician = activeMusicians(Random.nextInt(activeMusicians.length))
+					currentMusician = Some(newMusician)
+					println(s"New musician selected: ${newMusician.id}")
+				} else {
+					println("No active musicians available.")
+					currentMusician = None
+				}
+			}
+			context.system.scheduler.scheduleOnce(1.seconds) (self ! ConductorSendIsStillAlive)
+		}
+		case Measure(chords:List[Chord]) => {
+			println("The conductor received the chords, and will be sending them to the player")
+			currentMusician match {
+				case Some(m) => {
+					val ip = m.ip.replace("\"", "")
+					val actorPath = s"akka.tcp://MozartSystem${m.id}@${ip}:${m.port}/user/Musicien${m.id}"
+					val actorToSend = context.actorSelection(actorPath)
+					actorToSend ! PlayMeasure(chords)
+					println(s"Sent the chords to Musicien${m.id}")
+				}
+				case None => {
+					println("No active musicians available to send the chords to, send back to the sender")
+					sender ! PlayMeasure(chords)
+				}
+			}
+		}
+	}
 }
 object Musicien{
 	case class StartGame()
@@ -117,9 +164,11 @@ class Musicien (val id:Int, val musiciens:List[Terminal]) extends Actor {
 	var dbActor = context.actorOf(Props[upmc.akka.leader.DataBaseActor],"dbActor")
 	var player = context.actorOf(Props[upmc.akka.leader.Player], "player")
 	var provider = context.actorOf(Props[upmc.akka.leader.Provider], "provider")
-	val oreille = context.actorOf(Props(new Oreille(musiciens, id)), s"Oreille")
-	val coeur = context.actorOf(Props(new Coeur(currentMusicien,musiciens)), s"Coeur")
-	val conductor=context.actorOf(Props(new Conductor(musiciens)), s"Conductor")
+	val oreille = context.actorOf(Props(new Oreille(musiciens, id)), s"oreille")
+	println(s"DEBUG: Oreille actor created for musician $id at path ${oreille.path}")
+
+	val coeur = context.actorOf(Props(new Coeur(currentMusicien,musiciens)), s"coeur")
+	val conductor=context.actorOf(Props(new Conductor(musiciens)), s"conductor")
 
 	var scheduler = context.system.scheduler
 	var index = 0 
@@ -132,7 +181,7 @@ class Musicien (val id:Int, val musiciens:List[Terminal]) extends Actor {
 		case Start => {
 			displayActor ! Message ("Musicien " + this.id + " is created")
 			self ! StartGame
-			conductor ! ConductorUpdateStatus
+			conductor ! ConductorStart
 		}
 		case StartGame => {
 			var result = Random.nextInt(11)+2
@@ -146,23 +195,10 @@ class Musicien (val id:Int, val musiciens:List[Terminal]) extends Actor {
 		case PlayMeasure(chords:List[Chord]) => {
 			println("Received Measure, and will be playing it ")
 			player ! Measure(chords)
+			scheduler.scheduleOnce(1800 milliseconds) (self ! StartGame)
 		}
 		case Measure(chords:List[Chord]) => {
-			val availableMusicians = musiciens
-			// val availableMusicians = musiciens.filter(m => oreille.activeMusiciens.getOrElse(m.id, false))
-			// val availableMusicians = musiciens.filter(m => m.id != id) // Exclure soi-même
-			if (availableMusicians.nonEmpty) {
-				val chosenMusicien = availableMusicians(Random.nextInt(availableMusicians.length))
-				val musicien = self
-				println(s"Chosen Musicien: ${chosenMusicien.id} ${chosenMusicien.ip}:${chosenMusicien.port}")
-				val actorPath = s"akka.tcp://MozartSystem${chosenMusicien.id}@${chosenMusicien.ip}:${chosenMusicien.port}/user/Musicien${chosenMusicien.id}"
-				musicien ! PlayMeasure(chords)
-				println(s"SENT THE CHORDS TO Musicien${chosenMusicien.id} AND SCHEDULING FOR ANOTHER ONE")
-				context.system.scheduler.scheduleOnce(1800.milliseconds, self, StartGame)
-			} else {
-				println("Aucun musicien disponible pour jouer la mesure")
-				// todo : attendre 30secondes
-			}
+			conductor ! Measure(chords)
 		}
 
 	}
