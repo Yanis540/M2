@@ -10,7 +10,7 @@ import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
 import upmc.akka.ppc.DataBaseActor._
-
+import scala.util.Random
 import akka.actor.{Props, Actor, ActorRef, ActorSystem}
 
 
@@ -144,7 +144,7 @@ class Conductor ()extends Actor{
       // choose a random number from 1 to 6
       var de1 = (random * 6).toInt + 1
       var de2 = (random * 6).toInt + 1
-      var result = de1 + de2
+      var result = Random.nextInt(11)+2
       println("SENDING THE RESULT " +result)  
       provider ! FindMeasure(index,result) 
       index=index+1
