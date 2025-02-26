@@ -34,7 +34,7 @@ class Oreille(musiciens: List[Terminal], id: Int) extends Actor {
 	import Conductor._
 	var activeMusiciens = musiciens.map(m => m -> false).toMap
 	var musiciensAndConductor = musiciens.map(m => m -> false).toMap
-	val TIME_TO_ASSUME_DEAD = 10000
+	val TIME_TO_ASSUME_DEAD = 2000
 
 	// save all the timelaps of the last heartbeat for each musician
 	var musiciansHeartbeats = musiciens.map(m => m -> System.currentTimeMillis()).toMap
@@ -116,8 +116,9 @@ class Conductor(currentMusicien:Terminal,musiciens: List[Terminal]) extends Acto
 	var iamConductor: Boolean = false
 	var isFetchingActiveMusician = false
 	var currentSelectedMusicienToPlay: Option[Terminal] = None
-	val DELAY_TO_SEND_SYNC = 5000
-	val DELAY_TO_GET_ACTIVE_MUSICIANS = 1000
+	val DELAY_TO_SEND_SYNC = 1000
+	val DELAY_TO_GET_CONDUCTORS = 70000
+	val DELAY_TO_GET_ACTIVE_MUSICIANS = 1800
 	def receive: Receive = {
 		case ConductorStart =>{
 			iamConductor = true
@@ -143,15 +144,18 @@ class Conductor(currentMusicien:Terminal,musiciens: List[Terminal]) extends Acto
 				println(s"Sending ConductorSync from Musicien ${currentMusicien.id} to Musicien ${m.id}")
 				actorToSend ! ConductorSync(currentMusicien, iamConductor)
 			}
-			context.system.scheduler.scheduleOnce(DELAY_TO_SEND_SYNC milliseconds) (oreille ! CheckConductors)
+			if(!iamConductor){
+				context.system.scheduler.scheduleOnce(DELAY_TO_GET_CONDUCTORS milliseconds) (oreille ! CheckConductors)
+			}
+			context.system.scheduler.scheduleOnce(DELAY_TO_SEND_SYNC milliseconds) (self ! ConductorSendSync)
 		}
 		case CheckConductorResponse(conductors,musiciensWithStatus) => {
 			println("Received the response from the conductors")
 			val activeConductors = conductors.collect { case (m, true) => m }.toList
 			System.out.println("Active conductors: " + activeConductors)
 			val thereIsNoConductor = !activeConductors.nonEmpty
-			println(s"DEBUG: thereIsNoConductor = $thereIsNoConductor")
-			println(s"DEBUG: thereIsNoConductor = $musiciensWithStatus")
+			println(s"DEBUG: Is there no conductor = $thereIsNoConductor")
+			println(s"DEBUG: active musiciens = $musiciensWithStatus")
 			if (thereIsNoConductor) {
 				// chooesing the conductor 
 				println("No active conductors available. Electing a new one.")
@@ -169,7 +173,6 @@ class Conductor(currentMusicien:Terminal,musiciens: List[Terminal]) extends Acto
 					println("Trying again in 1 second.")
 					context.system.scheduler.scheduleOnce(DELAY_TO_GET_ACTIVE_MUSICIANS milliseconds)(oreille ! CheckConductors)
 				}
-
 			}
 		}
 		case CheckAvaiableMusiciansResponse(musicianStatus) => {
@@ -179,7 +182,12 @@ class Conductor(currentMusicien:Terminal,musiciens: List[Terminal]) extends Acto
 				currentSelectedMusicienToPlay match {
 					case Some(m) if musicianStatus.getOrElse(m, true) =>
 					println(s"Current musician ${m.id} is still active, no change needed.")
-					case _ =>
+					currentMusicienActor ! StartGame
+					case v =>
+					 v match{
+						case Some(m) => println(s"Current musician ${m.id} is not active, will be choosing a new one.")
+						case None => println("No current musician selected, will be choosing a new one.")
+					 } 
 					// Find an active musician
 					println("Finding an active musician to play the chords")
 					val activeMusicians = musicianStatus.collect { case (m, true) => m }.toList.filter(m => m.id != currentMusicien.id)
@@ -199,10 +207,10 @@ class Conductor(currentMusicien:Terminal,musiciens: List[Terminal]) extends Acto
 						println("No active musicians available.")
 						currentSelectedMusicienToPlay = None
 						println("Trying again in 1 second.")
-						context.system.scheduler.scheduleOnce(DELAY_TO_GET_ACTIVE_MUSICIANS seconds)(oreille ! CheckAvaiableMusicians)
 					}
 				}
 			}
+			context.system.scheduler.scheduleOnce(DELAY_TO_GET_ACTIVE_MUSICIANS milliseconds)(oreille ! CheckAvaiableMusicians)
 		}
 		case Measure(chords:List[Chord]) => {
 			println("The conductor received the chords, and will be sending them to the player")
@@ -215,8 +223,7 @@ class Conductor(currentMusicien:Terminal,musiciens: List[Terminal]) extends Acto
 					println(s"Sent the chords to Musicien${m.id}")
 				}
 				case None => {
-					println("No active musicians available to send the chords to, send back to the sender")
-					sender ! PlayMeasure(chords)
+					println("No active musicians available to send the chords to")
 				}
 			}
 		}
@@ -267,7 +274,6 @@ class Musicien (val id:Int, val musiciens:List[Terminal]) extends Actor {
 			if(index==15){
 			index=0
 			}
-			scheduler.scheduleOnce(1800 milliseconds) (self ! StartGame)
 		
 		}
 		case PlayMeasure(chords:List[Chord]) => {
