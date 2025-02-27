@@ -28,12 +28,15 @@ object Messages {
 object Oreille {
 	case object CheckTime
 }
-class Oreille(musiciens: List[Terminal], id: Int) extends Actor {
+class Oreille(currentMusicien:Terminal,musiciens: List[Terminal]) extends Actor {
 	import Messages._
 	import Oreille._
 	import Conductor._
 	var activeMusiciens = musiciens.map(m => m -> false).toMap
 	var musiciensAndConductor = musiciens.map(m => m -> false).toMap
+	val currentMusicienIp = currentMusicien.ip.replace("\"", "")
+	val currentMusicienConductorPath = s"akka.tcp://MozartSystem${currentMusicien.id}@${currentMusicienIp}:${currentMusicien.port}/user/Musicien${currentMusicien.id}/conductor"
+	var currentMusicienConductorActor = context.actorSelection(currentMusicienConductorPath)
 	val TIME_TO_ASSUME_DEAD = 1000
 
 	// save all the timelaps of the last heartbeat for each musician
@@ -55,13 +58,21 @@ class Oreille(musiciens: List[Terminal], id: Int) extends Actor {
 		case CheckConductors => sender ! CheckConductorResponse(musiciensAndConductor,activeMusiciens)
 		case CheckTime => {
 			val currentTime = System.currentTimeMillis()
+			var isConductorDead = false
 			val deadMusicians = musiciansHeartbeats.filter { case (m, t) => currentTime - t > TIME_TO_ASSUME_DEAD }
 			deadMusicians.foreach { case (m, t) => 
 				println(s"Assuming ${m.id} is dead")
 				activeMusiciens = activeMusiciens.updated(m, false)
 				// todo : if the conductor is dead, we need to elect a new one
+				if(musiciensAndConductor.getOrElse(m,true)){
+					println(s"Conductor ${m.id} is dead")
+					isConductorDead = true
+				}
 				musiciensAndConductor = musiciensAndConductor.updated(m, false)
 			}
+			if(isConductorDead)
+				currentMusicienConductorActor ! CheckConductorResponse(musiciensAndConductor,activeMusiciens)
+
 			context.system.scheduler.scheduleOnce(TIME_TO_ASSUME_DEAD.milliseconds)(self ! CheckTime)
 		}
 	}
@@ -75,12 +86,12 @@ class Coeur(val musician:Terminal,musiciens: List[Terminal]) extends Actor {
 	// select the musician 
 	
 	val oreille = context.actorSelection("../oreille")
-  	context.system.scheduler.scheduleOnce(1.seconds) (self ! StartBeat)
+  	context.system.scheduler.scheduleOnce(500 milliseconds) (self ! StartBeat)
   	def receive: Receive = {
 		
 		case StartBeat => {
 			oreille ! CheckAvaiableMusicians
-			context.system.scheduler.scheduleOnce(1.seconds) (self ! StartBeat)
+			context.system.scheduler.scheduleOnce(500 milliseconds) (self ! StartBeat)
 		}
 		case CheckAvaiableMusiciansResponse(m)=>{
 			// println("Received the response from the musicians")
@@ -103,6 +114,7 @@ class Coeur(val musician:Terminal,musiciens: List[Terminal]) extends Actor {
 }
 object Conductor {
   	case object ConductorStart
+  	case object ConductorInitialSync
 	case class ConductorSync(musicien:Terminal,isConductor:Boolean) 
 }
 class Conductor(currentMusicien:Terminal,musiciens: List[Terminal]) extends Actor {
@@ -116,8 +128,8 @@ class Conductor(currentMusicien:Terminal,musiciens: List[Terminal]) extends Acto
 	var iamConductor: Boolean = false
 	var isFetchingActiveMusician = false
 	var currentSelectedMusicienToPlay: Option[Terminal] = None
-	val DELAY_TO_SEND_SYNC = 1000
-	val DELAY_TO_GET_CONDUCTORS = 3000
+	val DELAY_TO_SEND_SYNC = 500
+	val DELAY_TO_GET_CONDUCTORS = 5000
 	val DELAY_TO_GET_ACTIVE_MUSICIANS = 1800
 	def receive: Receive = {
 		case ConductorStart =>{
@@ -134,7 +146,20 @@ class Conductor(currentMusicien:Terminal,musiciens: List[Terminal]) extends Acto
 				}
 			}
 		}
-	
+		case ConductorInitialSync => {
+			println("Sending ConductorInitialSync to all the musicians")
+			for (m <- musiciens) {
+				val ip = m.ip.replace("\"", "")
+				val actorPath = s"akka.tcp://MozartSystem${m.id}@${ip}:${m.port}/user/Musicien${m.id}/oreille"
+				val actorToSend = context.actorSelection(actorPath)
+				println(s"Sending ConductorInitialSync from Musicien ${currentMusicien.id} to Musicien ${m.id}")
+				actorToSend ! ConductorSync(currentMusicien, iamConductor)
+			}
+			// concrètement :  je retarde un peu l'envoi de sync pour recevoir les sync des autres conductors, de cette manière je sais que j'aurais au moins deux status 
+			// de chaque musicien, du coup je pourrais récupérer le dernier status de chaque musicien 
+			context.system.scheduler.scheduleOnce(DELAY_TO_GET_CONDUCTORS milliseconds) (oreille ! CheckConductors)
+			context.system.scheduler.scheduleOnce(DELAY_TO_GET_CONDUCTORS milliseconds) (self ! ConductorSendSync)
+		}
 		case ConductorSendSync => {
 			println("Sending ConductorSync to all the musicians")
 			for (m <- musiciens) {
@@ -143,11 +168,6 @@ class Conductor(currentMusicien:Terminal,musiciens: List[Terminal]) extends Acto
 				val actorToSend = context.actorSelection(actorPath)
 				println(s"Sending ConductorSync from Musicien ${currentMusicien.id} to Musicien ${m.id}")
 				actorToSend ! ConductorSync(currentMusicien, iamConductor)
-			}
-			if(!iamConductor){
-				// concrètement :  je retarde un peu l'envoi de sync pour recevoir les sync des autres conductors, de cette manière je sais que j'aurais au moins deux status 
-				// de chaque musicien, du coup je pourrais récupérer le dernier status de chaque musicien
-				context.system.scheduler.scheduleOnce(DELAY_TO_GET_CONDUCTORS milliseconds) (oreille ! CheckConductors)
 			}
 			context.system.scheduler.scheduleOnce(DELAY_TO_SEND_SYNC milliseconds) (self ! ConductorSendSync)
 		}
@@ -182,6 +202,7 @@ class Conductor(currentMusicien:Terminal,musiciens: List[Terminal]) extends Acto
 			println("I am the conductor :"+iamConductor)
 			if(iamConductor){
 				currentSelectedMusicienToPlay match {
+					// save the current musicien if he is still active
 					case Some(m) if musicianStatus.getOrElse(m, true) =>
 					println(s"Current musician ${m.id} is still active, no change needed.")
 					currentMusicienActor ! StartGame
@@ -250,7 +271,7 @@ class Musicien (val id:Int, val musiciens:List[Terminal]) extends Actor {
 	var dbActor = context.actorOf(Props[upmc.akka.leader.DataBaseActor],"dbActor")
 	var player = context.actorOf(Props[upmc.akka.leader.Player], "player")
 	var provider = context.actorOf(Props[upmc.akka.leader.Provider], "provider")
-	val oreille = context.actorOf(Props(new Oreille(musiciens, id)), s"oreille")
+	val oreille = context.actorOf(Props(new Oreille(currentMusicien,musiciens)), s"oreille")
 	println(s"DEBUG: Oreille actor created for musician $id at path ${oreille.path}")
 
 	val coeur = context.actorOf(Props(new Coeur(currentMusicien,musiciens)), s"coeur")
@@ -266,7 +287,7 @@ class Musicien (val id:Int, val musiciens:List[Terminal]) extends Actor {
 		// Initialisation
 		case Start => {
 			displayActor ! Message ("Musicien " + this.id + " is created")
-			conductor ! ConductorSendSync
+			conductor ! ConductorInitialSync
 		}
 		case StartGame => {
 			println("Received StartGame, and will be starting the game")
