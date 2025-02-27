@@ -145,6 +145,8 @@ class Conductor(currentMusicien:Terminal,musiciens: List[Terminal]) extends Acto
 				actorToSend ! ConductorSync(currentMusicien, iamConductor)
 			}
 			if(!iamConductor){
+				// concrètement :  je retarde un peu l'envoi de sync pour recevoir les sync des autres conductors, de cette manière je sais que j'aurais au moins deux status 
+				// de chaque musicien, du coup je pourrais récupérer le dernier status de chaque musicien
 				context.system.scheduler.scheduleOnce(DELAY_TO_GET_CONDUCTORS milliseconds) (oreille ! CheckConductors)
 			}
 			context.system.scheduler.scheduleOnce(DELAY_TO_SEND_SYNC milliseconds) (self ! ConductorSendSync)
