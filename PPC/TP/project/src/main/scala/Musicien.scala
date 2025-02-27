@@ -34,7 +34,7 @@ class Oreille(musiciens: List[Terminal], id: Int) extends Actor {
 	import Conductor._
 	var activeMusiciens = musiciens.map(m => m -> false).toMap
 	var musiciensAndConductor = musiciens.map(m => m -> false).toMap
-	val TIME_TO_ASSUME_DEAD = 2000
+	val TIME_TO_ASSUME_DEAD = 1000
 
 	// save all the timelaps of the last heartbeat for each musician
 	var musiciansHeartbeats = musiciens.map(m => m -> System.currentTimeMillis()).toMap
@@ -117,7 +117,7 @@ class Conductor(currentMusicien:Terminal,musiciens: List[Terminal]) extends Acto
 	var isFetchingActiveMusician = false
 	var currentSelectedMusicienToPlay: Option[Terminal] = None
 	val DELAY_TO_SEND_SYNC = 1000
-	val DELAY_TO_GET_CONDUCTORS = 70000
+	val DELAY_TO_GET_CONDUCTORS = 3000
 	val DELAY_TO_GET_ACTIVE_MUSICIANS = 1800
 	def receive: Receive = {
 		case ConductorStart =>{
