@@ -37,7 +37,7 @@ class Oreille(currentMusicien:Terminal,musiciens: List[Terminal]) extends Actor 
 	val currentMusicienIp = currentMusicien.ip.replace("\"", "")
 	val currentMusicienConductorPath = s"akka.tcp://MozartSystem${currentMusicien.id}@${currentMusicienIp}:${currentMusicien.port}/user/Musicien${currentMusicien.id}/conductor"
 	var currentMusicienConductorActor = context.actorSelection(currentMusicienConductorPath)
-	val TIME_TO_ASSUME_DEAD = 1000
+	val TIME_TO_ASSUME_DEAD = 2000
 
 	// save all the timelaps of the last heartbeat for each musician
 	var musiciansHeartbeats = musiciens.map(m => m -> System.currentTimeMillis()).toMap
@@ -47,12 +47,11 @@ class Oreille(currentMusicien:Terminal,musiciens: List[Terminal]) extends Actor 
 
 	def receive: Receive = {
 		case Heartbeat(t) => 
-			println(s"Received Heartbeat from ${t.id}")
 			musiciansHeartbeats = musiciansHeartbeats.updated(t, System.currentTimeMillis())
 			activeMusiciens = activeMusiciens.updated(t, true)
 		case CheckAvaiableMusicians => sender ! CheckAvaiableMusiciansResponse(activeMusiciens)
 		case ConductorSync(musicien,isConductor) => {
-			println(s"Received ConductorSync from ${musicien.id} with value ${isConductor}")
+			println(s"[ConductorSync] : Received ConductorSync from Musicien ${musicien.id} with isConductor = $isConductor")
 			musiciensAndConductor = musiciensAndConductor.updated(musicien, isConductor)
 		} 
 		case CheckConductors => sender ! CheckConductorResponse(musiciensAndConductor,activeMusiciens)
@@ -86,19 +85,19 @@ class Coeur(val musician:Terminal,musiciens: List[Terminal]) extends Actor {
 	// select the musician 
 	
 	val oreille = context.actorSelection("../oreille")
-  	context.system.scheduler.scheduleOnce(500 milliseconds) (self ! StartBeat)
+  	context.system.scheduler.scheduleOnce(50 milliseconds) (self ! StartBeat)
   	def receive: Receive = {
 		
 		case StartBeat => {
 			oreille ! CheckAvaiableMusicians
-			context.system.scheduler.scheduleOnce(500 milliseconds) (self ! StartBeat)
+			context.system.scheduler.scheduleOnce(50 milliseconds) (self ! StartBeat)
 		}
 		case CheckAvaiableMusiciansResponse(m)=>{
 			// println("Received the response from the musicians")
 			m.foreach(println)
 			// send for each 
 			m.foreach((v) => v match {
-				case (t, isActive) => {
+				case (t, _) => {
 					val ip = t.ip.replace("\"", "")
 					val actorPath = s"akka.tcp://MozartSystem${t.id}@${ip}:${t.port}/user/Musicien${t.id}/oreille"
 					val actorToSend = context.actorSelection(actorPath)
@@ -112,6 +111,7 @@ class Coeur(val musician:Terminal,musiciens: List[Terminal]) extends Actor {
 		}
 	}
 }
+
 object Conductor {
   	case object ConductorStart
   	case object ConductorInitialSync
@@ -128,7 +128,7 @@ class Conductor(currentMusicien:Terminal,musiciens: List[Terminal]) extends Acto
 	var iamConductor: Boolean = false
 	var isFetchingActiveMusician = false
 	var currentSelectedMusicienToPlay: Option[Terminal] = None
-	val DELAY_TO_SEND_SYNC = 500
+	val DELAY_TO_SEND_SYNC = 50
 	val DELAY_TO_GET_CONDUCTORS = 5000
 	val DELAY_TO_GET_ACTIVE_MUSICIANS = 1800
 	def receive: Receive = {
@@ -157,8 +157,8 @@ class Conductor(currentMusicien:Terminal,musiciens: List[Terminal]) extends Acto
 			}
 			// concrètement :  je retarde un peu l'envoi de sync pour recevoir les sync des autres conductors, de cette manière je sais que j'aurais au moins deux status 
 			// de chaque musicien, du coup je pourrais récupérer le dernier status de chaque musicien 
+			context.system.scheduler.scheduleOnce(DELAY_TO_SEND_SYNC milliseconds) (self ! ConductorSendSync)
 			context.system.scheduler.scheduleOnce(DELAY_TO_GET_CONDUCTORS milliseconds) (oreille ! CheckConductors)
-			context.system.scheduler.scheduleOnce(DELAY_TO_GET_CONDUCTORS milliseconds) (self ! ConductorSendSync)
 		}
 		case ConductorSendSync => {
 			println("Sending ConductorSync to all the musicians")
@@ -172,15 +172,12 @@ class Conductor(currentMusicien:Terminal,musiciens: List[Terminal]) extends Acto
 			context.system.scheduler.scheduleOnce(DELAY_TO_SEND_SYNC milliseconds) (self ! ConductorSendSync)
 		}
 		case CheckConductorResponse(conductors,musiciensWithStatus) => {
-			println("Received the response from the conductors")
 			val activeConductors = conductors.collect { case (m, true) => m }.toList
-			System.out.println("Active conductors: " + activeConductors)
+			System.out.println(" [CheckConductorResponse] : Received Active conductors: " + activeConductors)
 			val thereIsNoConductor = !activeConductors.nonEmpty
-			println(s"DEBUG: Is there no conductor = $thereIsNoConductor")
-			println(s"DEBUG: active musiciens = $musiciensWithStatus")
 			if (thereIsNoConductor) {
 				// chooesing the conductor 
-				println("No active conductors available. Electing a new one.")
+				println("[CheckConductorResponse]! : No active conductors available. Electing a new one.")
 				currentSelectedMusicienToPlay = None
 				var activeMusicians = musiciensWithStatus.collect { case (m, true) => m }.toList
 				if (activeMusicians.nonEmpty) {
@@ -189,64 +186,60 @@ class Conductor(currentMusicien:Terminal,musiciens: List[Terminal]) extends Acto
 					val actorPath = s"akka.tcp://MozartSystem${newConductor.id}@${ip}:${newConductor.port}/user/Musicien${newConductor.id}/conductor"
 					val actorToSend = context.actorSelection(actorPath)
 					actorToSend ! ConductorStart
-					println(s"New conductor elected: ${newConductor.id}")
+					println(s"[CheckConductorResponse] : New conductor elected: ${newConductor.id}")
 				} else {
-					println("No active musicians available to elect a new conductor.")
-					println("Trying again in 1 second.")
+					println("[CheckConductorResponse] : No active musicians available to elect a new conductor.")
 					context.system.scheduler.scheduleOnce(DELAY_TO_GET_ACTIVE_MUSICIANS milliseconds)(oreille ! CheckConductors)
 				}
 			}
 		}
 		case CheckAvaiableMusiciansResponse(musicianStatus) => {
-			println("Conductor : Received the response from the musicians :"+musicianStatus)
-			println("I am the conductor :"+iamConductor)
+			println("[CheckAvaiableMusiciansResponse] : Conductor : musiciens status :" + musicianStatus)
+			println("[CheckAvaiableMusiciansResponse] : I am the conductor :"+iamConductor)
 			if(iamConductor){
 				currentSelectedMusicienToPlay match {
 					// save the current musicien if he is still active
 					case Some(m) if musicianStatus.getOrElse(m, true) =>
-					println(s"Current musician ${m.id} is still active, no change needed.")
+					println(s"[CheckAvaiableMusiciansResponse] : Current musician ${m.id} is still active, no change needed.")
 					currentMusicienActor ! StartGame
 					case v =>
 					 v match{
-						case Some(m) => println(s"Current musician ${m.id} is not active, will be choosing a new one.")
-						case None => println("No current musician selected, will be choosing a new one.")
+						case Some(m) => println(s"[CheckAvaiableMusiciansResponse] : Current musician ${m.id} is not active, will be choosing a new one.")
+						case None => println("[CheckAvaiableMusiciansResponse] : No current musician selected, will be choosing a new one.")
 					 } 
 					// Find an active musician
-					println("Finding an active musician to play the chords")
+					println("[CheckAvaiableMusiciansResponse] : Finding an active musician to play the chords")
 					val activeMusicians = musicianStatus.collect { case (m, true) => m }.toList.filter(m => m.id != currentMusicien.id)
-					System.out.println("Active musicians: " + activeMusicians)
+					
 					if (activeMusicians.nonEmpty) {
 						val newMusician = activeMusicians(Random.nextInt(activeMusicians.length))
 						// après avoir choisi le musicien, on envoie au musicien courant (conduite) le message pour qu'il envoie les accords
 						currentSelectedMusicienToPlay = Some(newMusician)
-						println(s"New musician selected: ${newMusician.id}, now starting the game on the conductor side")
+						println(s"[CheckAvaiableMusiciansResponse] : New musician selected: ${newMusician.id}, now starting the game on the conductor side")
 						currentMusicienActor ! StartGame
-						context.actorSelection(currentMusicienPath).resolveOne(1.second).onComplete {
-							case scala.util.Success(ref) => println(s"DEBUG: Found Musicien actor at ")
-							case scala.util.Failure(ex) => println(s"ERROR: Could not find Musicien actor at  - ${ex.getMessage}")
-						}
+						
 						
 					} else {
-						println("No active musicians available.")
+						println("[CheckAvaiableMusiciansResponse] : No active musicians available.")
 						currentSelectedMusicienToPlay = None
-						println("Trying again in 1 second.")
+						println("[CheckAvaiableMusiciansResponse] : Trying again in 1 second.")
 					}
 				}
 			}
 			context.system.scheduler.scheduleOnce(DELAY_TO_GET_ACTIVE_MUSICIANS milliseconds)(oreille ! CheckAvaiableMusicians)
 		}
 		case Measure(chords:List[Chord]) => {
-			println("The conductor received the chords, and will be sending them to the player")
+			println("[CheckAvaiableMusiciansResponse] : The conductor received the chords, and will be sending them to the player")
 			currentSelectedMusicienToPlay match {
 				case Some(m) => {
 					val ip = m.ip.replace("\"", "")
 					val actorPath = s"akka.tcp://MozartSystem${m.id}@${ip}:${m.port}/user/Musicien${m.id}"
 					val actorToSend = context.actorSelection(actorPath)
 					actorToSend ! PlayMeasure(chords)
-					println(s"Sent the chords to Musicien${m.id}")
+					println(s"[CheckAvaiableMusiciansResponse] : Sent the chords to Musicien${m.id}")
 				}
 				case None => {
-					println("No active musicians available to send the chords to")
+					println("[CheckAvaiableMusiciansResponse] : No active musicians available to send the chords to")
 				}
 			}
 		}
