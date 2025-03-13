@@ -126,11 +126,14 @@ class Conductor(currentMusicien:Terminal,musiciens: List[Terminal]) extends Acto
 	val currentMusicienPath = s"akka.tcp://MozartSystem${currentMusicien.id}@${currentMusicienIp}:${currentMusicien.port}/user/Musicien${currentMusicien.id}"
 	var currentMusicienActor = context.actorSelection(currentMusicienPath)
 	var iamConductor: Boolean = false
+	var noActiveMusician = false
+	var timeToLeave = System.currentTimeMillis()
 	var isFetchingActiveMusician = false
 	var currentSelectedMusicienToPlay: Option[Terminal] = None
 	val DELAY_TO_SEND_SYNC = 50
 	val DELAY_TO_GET_CONDUCTORS = 5000
 	val DELAY_TO_GET_ACTIVE_MUSICIANS = 1800
+	val TIME_TO_LEAVE = 30 *1000
 	def receive: Receive = {
 		case ConductorStart =>{
 			iamConductor = true
@@ -215,14 +218,24 @@ class Conductor(currentMusicien:Terminal,musiciens: List[Terminal]) extends Acto
 						val newMusician = activeMusicians(Random.nextInt(activeMusicians.length))
 						// après avoir choisi le musicien, on envoie au musicien courant (conduite) le message pour qu'il envoie les accords
 						currentSelectedMusicienToPlay = Some(newMusician)
+						noActiveMusician = false 
 						println(s"[CheckAvaiableMusiciansResponse] : New musician selected: ${newMusician.id}, now starting the game on the conductor side")
 						currentMusicienActor ! StartGame
-						
-						
 					} else {
 						println("[CheckAvaiableMusiciansResponse] : No active musicians available.")
 						currentSelectedMusicienToPlay = None
-						println("[CheckAvaiableMusiciansResponse] : Trying again in 1 second.")
+						if(noActiveMusician!=true){
+							noActiveMusician = true
+							timeToLeave = System.currentTimeMillis()
+							println("[CheckAvaiableMusiciansResponse] : No active musicians available to send the chords to")
+						}
+						if(System.currentTimeMillis()-timeToLeave>TIME_TO_LEAVE){
+							noActiveMusician = false
+							println("No active musicians available, leaving")
+							context.system.terminate()
+						}else{
+							println("[CheckAvaiableMusiciansResponse] : Trying again in 1 second.")
+						}
 					}
 				}
 			}
