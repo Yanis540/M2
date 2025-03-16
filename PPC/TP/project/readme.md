@@ -20,6 +20,7 @@ L’élection du **chef d’orchestre** s’articule autour de plusieurs étapes
   - Si un **chef d’orchestre** est déjà en place, aucune élection n’est nécessaire.  
   - Dans le cas contraire, les **Conductors** procèdent à une élection en sélectionnant le musicien disponible ayant l’indice le plus bas.  
 
+Il est noté que le chef d'orchestre attend 30 secondes maximum avant de quitter si aucun musicien se manifeste.
 ## Disparition d’un musicien  
 
 Un musicien est considéré comme inactif s’il n’a pas émis de signal durant **2 secondes**, sachant que chaque musicien envoie une notification toutes les **50 ms**.  
