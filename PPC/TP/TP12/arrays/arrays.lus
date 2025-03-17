@@ -1,0 +1,47 @@
+
+fun f(x, y : int) returns (r : int);
+let
+  r = x + 10 * y;
+tel
+
+node go<<n : int>>(a, b : int^n) returns (s : int^n);
+let
+  s = map<<n>> f (a, b);
+tel
+
+fun f_i(x, y, i : int) returns (r1, r2 : int);
+let
+  r1 = x + 10 * y;
+  r2 = i;
+tel
+
+node go_i<<n : int>>(a, b : int^n) returns (s1, s2 : int^n);
+let
+  (s1, s2) = mapi<<n>> f_i (a, b);
+tel
+
+node go_f<<n : int>>(a : int^n) returns (s : int);
+let
+  s = fold<<n>> f (a, 0);
+tel
+
+fun g(x, y, i, acc : int) returns (acc' : int);
+let
+  acc' = if (i % 2 = 0) then (x + y + acc) else acc;
+tel
+
+node go_fi<<n : int>>(a, b : int^n) returns (s : int);
+let
+  s = foldi<<n>> g (a, b, 0);
+tel
+
+node main() returns (r : int^4);
+var a1, a2, b, s1 : int^4;
+let
+  a1 = 0^4;
+  a2 = [ [ a1 with [2] = 1 ] with [4] = 2 ];
+  b = [ 4, 3, 2, 1 ];
+  s1 = go<<4>>(a2, b);
+  r = s1[2..3] @ s1[0..1];
+tel
+

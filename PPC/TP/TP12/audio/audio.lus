@@ -1,0 +1,9 @@
+
+const delay : int = 4410 (* 100ms at 44100Hz *)
+const k : float = 0.9
+
+node main(ic1, ic2 : float) returns (oc1, oc2 : float);
+let
+  (oc1, oc2) = (0.0 fby ic1, 0.0 fby ic2);
+tel
+

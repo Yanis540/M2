@@ -1,0 +1,12 @@
+
+type mode = Rising | Falling | Stable
+
+node counter(v : mode) returns (y : int);
+var py : int;
+let
+  y = merge v (Rising  -> (py when Rising(v)) + 1)
+              (Falling -> (py when Falling(v)) - 1)
+              (Stable  -> py when Stable(v));
+  py = 0 fby y;
+tel
+

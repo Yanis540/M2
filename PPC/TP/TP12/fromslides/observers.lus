@@ -1,0 +1,22 @@
+
+node never_twice(A : bool) returns (OK : bool);
+let
+  OK = true -> not(A and pre A);
+tel;
+
+node implies(A, B : bool) returns (OK : bool);
+let
+  OK = not(A) or B;
+tel;
+
+node once(A : bool) returns (OK : bool);
+let
+  OK = A -> A or pre OK;
+tel;
+
+node followed_by(A, B : bool)
+returns (OK : bool);
+let
+  OK = implies(B, once(A));
+tel;
+

@@ -1,0 +1,16 @@
+
+# set terminal pdf
+# set output "fir1.pdf"
+
+datafile = "fir1.out"
+f(n) = (1.02)**n
+
+set grid
+
+set title "fir1 output"
+
+plot datafile using  1:(x=$1,f(x)) title "signal of interest" with lines, \
+     datafile using 1:3 title "system output" with linespoints
+
+# pause -1 "Press return to continue"
+

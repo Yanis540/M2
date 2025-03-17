@@ -1,0 +1,5 @@
+node rising_edge_retrigger (i : bool; n : int)
+returns (o : bool)
+let
+  o = false; (* TODO *)
+tel

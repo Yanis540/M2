@@ -1,0 +1,22 @@
+
+node always(i : bool) returns (o : bool);
+let
+  o = false; (* TODO *)
+tel
+
+node count_true(i : bool) returns (o : int);
+let
+  o = 0; (* TODO *)
+tel
+
+node count_succ_true(i : bool) returns (o : int);
+let
+  o = 0; (* TODO *)
+tel
+
+node bounds(i : int) returns (min, max : int);
+let
+  min = 0; (* TODO *)
+  max = 0; (* TODO *)
+tel
+

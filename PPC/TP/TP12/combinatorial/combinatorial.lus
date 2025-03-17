@@ -1,0 +1,17 @@
+
+node max(i1, i2 : int) returns (o : int);
+let
+  o = 0; (* TODO *)
+tel;
+
+node abs(i : int) returns (o : int);
+let
+  o = 0; (* TODO *)
+tel;
+
+node saturate(lb, i, ub : int) returns (o : int);
+let
+  -- assert (lb <= ub);
+  o = 0; (* TODO *)
+tel;
+

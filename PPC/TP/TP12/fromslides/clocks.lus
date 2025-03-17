@@ -1,0 +1,18 @@
+
+node current(vi : int; ck : bool; v : int :: ck) returns (b : int);
+let
+  b = merge ck v ((vi fby b) when not ck);
+tel
+
+node rtotal(x : int) returns (y : int);
+let
+  y = (0 -> pre y) + x;
+tel;
+
+node count_true(x : bool) returns (n : int);
+var count : int when x;
+let
+  count = rtotal(1 when x);
+  n = current(0, x, count);
+tel;
+

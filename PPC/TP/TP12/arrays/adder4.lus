@@ -1,0 +1,13 @@
+
+node full_add(a, b, c : bool) returns (s, co : bool);
+let
+  s = (a <> b) <> c;
+  co = if a then b or c else b and c;
+tel;
+
+node add4 (a, b: bool^4) returns (s: bool^4; carry: bool);
+let
+  s = a; (* TODO *)
+  carry = false; (* TODO *)
+tel
+

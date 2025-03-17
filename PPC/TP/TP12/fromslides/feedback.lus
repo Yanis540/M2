@@ -1,0 +1,33 @@
+
+node direct(x : int) returns (y : int);
+let
+  y = x;
+tel
+
+node delayed(x : int) returns (y : int);
+let
+  y = pre x;
+tel
+
+node plumbing(x, y : int) returns (dx, dy : int);
+let
+  dx = x;
+  dy = y;
+tel
+
+node main1(w : int) returns (z : int);
+let
+  z = direct(z);
+tel
+
+node main2(w : int) returns (z : int);
+let
+  z = 0 -> delayed(z);
+tel
+
+node main3(w : int) returns (z : int);
+var v : int;
+let
+  z, v = plumbing(v, w);
+tel
+
