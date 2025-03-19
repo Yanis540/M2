@@ -1,22 +1,22 @@
 
 node always(i : bool) returns (o : bool);
 let
-  o = false; (* TODO *)
+  o = i -> pre(o) and i ; (* TODO *)
 tel
 
 node count_true(i : bool) returns (o : int);
 let
-  o = 0; (* TODO *)
+  o = (if i= true then 1 else 0) -> (pre(o) +(if i= true then 1 else 0) ) ; (* TODO *)
 tel
 
 node count_succ_true(i : bool) returns (o : int);
 let
-  o = 0; (* TODO *)
+  o = (if i= true then 1 else 0) -> (if(i=false) then 0 else pre(o)+1) ; (* TODO *)
 tel
 
 node bounds(i : int) returns (min, max : int);
 let
-  min = 0; (* TODO *)
-  max = 0; (* TODO *)
+  min = i -> (if( pre(min) < i ) then pre(min) else i); (* TODO *)
+  max = i -> (if( pre(max) > i ) then pre(max) else i); (* TODO *)
 tel
 

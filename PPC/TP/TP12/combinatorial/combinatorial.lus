@@ -1,17 +1,17 @@
 
 node max(i1, i2 : int) returns (o : int);
 let
-  o = 0; (* TODO *)
+  o = if i1 > i2 then i1 else i2; (* TODO *)
 tel;
 
 node abs(i : int) returns (o : int);
 let
-  o = 0; (* TODO *)
+  o = if i > 0 then i else  -1*i; (* TODO *)
 tel;
 
 node saturate(lb, i, ub : int) returns (o : int);
 let
   -- assert (lb <= ub);
-  o = 0; (* TODO *)
+  o = min(ub,max(i,lb)); (* TODO *)
 tel;
 

@@ -1,34 +1,28 @@
-
-(* Heptagon 1.05 does not implement the `xor` operator properly.
-   The work-around is to use `<>`. *)
-
-node full_add(a, b, c : bool) returns (s, co : bool);
-let
-  s = false;  (* TODO *)
-  co = false; (* TODO *)
-tel;
-
 node half_add(a, b : bool) returns (s, co : bool);
 let
-  s = false;  (* TODO *)
-  co = false; (* TODO *)
+  s = a <> b;  (* XOR pour la somme *)
+  co = a and b; (* ET logique pour la retenue *)
 tel;
 
 node full_add_h(a, b, c : bool) returns (s, co : bool);
 var s1, c1, c2 : bool;
 let
-  s = false;  (* TODO *)
-  co = false; (* TODO *)
-  s1 = false; (* TODO *)
-  c1 = false; (* TODO *)
-  c2 = false; (* TODO *)
+  (s1, c1) = half_add(a, b);
+  (s, c2) = half_add(s1, c);
+  co = c1 or c2;
+tel;
+
+node full_add (a, b, c : bool) returns (s, co : bool);
+let
+  s = a <> b <> c; (* XOR en cascade pour la somme *)
+  co = (a and b) or (b and c) or (a and c); (* Calcul de la retenue *)
 tel;
 
 node equivalence(a, b, c : bool) returns (ok : bool);
+var s1, co1, s2, co2 : bool;
 let
-  ok = false; (* TODO *)
+  (s1, co1) = full_add(a, b, c);
+  (s2, co2) = full_add_h(a, b, c);
+  ok = (s1 = s2) and (co1 = co2);
   --%PROPERTY ok;
 tel;
-
-          (* https://kind.cs.uiowa.edu/app *)
-

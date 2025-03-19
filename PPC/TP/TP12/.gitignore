@@ -1,3 +1,9 @@
 *.mls
 *.epci
 *.log
+*.c
+*.h
+*_c
+*.exe
+*.o
+*.out

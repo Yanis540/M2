@@ -18,18 +18,31 @@ let
 tel
 
 node three_point_average(x : float) returns (y : float);
+var x0, x1, x2 : float;
 let
-  y = x; (* TODO *)
+  x0 = x;
+  x1 = 0.0 fby x0;
+  x2 = 0.0 fby x1;
+  y = (x0 +. x1 +. x2) /. 3.0;
 tel
 
 node seven_point_average(x : float) returns (y : float);
+var x0, x1, x2, x3, x4, x5, x6 : float;
 let
-  y = x; (* TODO *)
+  x0 = x;
+  x1 = 0.0 fby x0;
+  x2 = 0.0 fby x1;
+  x3 = 0.0 fby x2;
+  x4 = 0.0 fby x3;
+  x5 = 0.0 fby x4;
+  x6 = 0.0 fby x5;
+  y = (x0 +. x1 +. x2 +. x3 +. x4 +. x5 +. x6) /. 7.0;
 tel
+
 
 node system() returns (n : int; s, y : float);
 let
   (n, s) = source();
-  y = three_point_average(s);
+  y = seven_point_average(s);
 tel
 
