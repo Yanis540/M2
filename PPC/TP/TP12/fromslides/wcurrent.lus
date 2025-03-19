@@ -1,0 +1,8 @@
+
+node current(v_i : int; v : int :: ck; ck : bool) returns (c : int)
+var pc : int;
+let
+  c = merge ck v (pc whenot ck);
+  pc = v_i -> pre c;
+tel
+

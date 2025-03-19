@@ -1,0 +1,28 @@
+
+node implies(a, b : bool) returns (o : bool);
+let
+  o = false; (* TODO *)
+tel
+
+node after(a: bool) returns (o : bool);
+let
+  o = false; (* TODO *)
+tel
+
+-- note: Lustre v4 does not need the "false ->"...
+node always_since(b, a : bool) returns (o : bool);
+let
+  o = false; (* TODO *)
+tel
+
+-- note: Lustre v4 does not need the "false ->"...
+node once_since(c, a : bool) returns (o : bool);
+let
+  o = false; (* TODO *)
+tel
+
+node always_from_to(b, a, c : bool) returns (x : bool);
+let
+  x = false; (* TODO *)
+tel
+

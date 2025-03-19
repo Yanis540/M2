@@ -1,0 +1,18 @@
+heptc -target c -s once_since temporal.lus
+gcc -Wno-parentheses-equality \
+	    -o temporal.exe -I $(opam var lib)/heptagon/c -I . temporal_c/temporal_types.c \
+	    temporal_c/temporal.c temporal_c/_main.c
+cat trace3.txt | ./temporal.exe | head -n       13 | pr -w 40 -m -t trace3.txt -
+0 0		    c ? a ? => 1
+0 0		    c ? a ? => 1
+0 0		    c ? a ? => 1
+0 1		    c ? a ? => 0
+0 0		    c ? a ? => 0
+1 0		    c ? a ? => 1
+0 0		    c ? a ? => 1
+0 0		    c ? a ? => 1
+0 1		    c ? a ? => 0
+0 0		    c ? a ? => 0
+0 0		    c ? a ? => 0
+1 0		    c ? a ? => 1
+0 0		    c ? a ? => 1

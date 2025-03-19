@@ -1,0 +1,8 @@
+
+node unbounded(x : int) returns (o : int);
+var half : bool;
+let
+  half = true -> not (pre half);
+  o = x + (x when half);
+tel;
+

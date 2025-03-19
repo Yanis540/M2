@@ -1,0 +1,34 @@
+
+(* Heptagon 1.05 does not implement the `xor` operator properly.
+   The work-around is to use `<>`. *)
+
+node full_add(a, b, c : bool) returns (s, co : bool);
+let
+  s = false;  (* TODO *)
+  co = false; (* TODO *)
+tel;
+
+node half_add(a, b : bool) returns (s, co : bool);
+let
+  s = false;  (* TODO *)
+  co = false; (* TODO *)
+tel;
+
+node full_add_h(a, b, c : bool) returns (s, co : bool);
+var s1, c1, c2 : bool;
+let
+  s = false;  (* TODO *)
+  co = false; (* TODO *)
+  s1 = false; (* TODO *)
+  c1 = false; (* TODO *)
+  c2 = false; (* TODO *)
+tel;
+
+node equivalence(a, b, c : bool) returns (ok : bool);
+let
+  ok = false; (* TODO *)
+  --%PROPERTY ok;
+tel;
+
+          (* https://kind.cs.uiowa.edu/app *)
+

@@ -1,0 +1,16 @@
+heptc -target c -s always_from_to temporal.lus
+gcc -Wno-parentheses-equality \
+	    -o temporal.exe -I $(opam var lib)/heptagon/c -I . temporal_c/temporal_types.c \
+	    temporal_c/temporal.c temporal_c/_main.c
+cat trace4.txt | ./temporal.exe | head -n       11 | pr -w 40 -m -t trace4.txt -
+0 0 0		    b ? a ? c ? => 1
+0 0 0		    b ? a ? c ? => 1
+1 1 0		    b ? a ? c ? => 1
+1 0 0		    b ? a ? c ? => 1
+1 0 0		    b ? a ? c ? => 1
+1 0 0		    b ? a ? c ? => 1
+0 0 0		    b ? a ? c ? => 0
+0 0 0		    b ? a ? c ? => 0
+0 0 1		    b ? a ? c ? => 1
+0 0 0		    b ? a ? c ? => 1
+0 0 0		    b ? a ? c ? => 1
